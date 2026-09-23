@@ -22,6 +22,14 @@ No Man's Sky.
 
 ---
 
+> [!IMPORTANT]
+> **Questo progetto è sviluppato con l'aiuto dell'intelligenza artificiale.**
+> Le scelte di merito sono umane, il codice è scritto in gran parte dall'IA.
+> I dettagli sono [più in basso](#sviluppo-ia), nella sezione
+> *Come è stato sviluppato*.
+
+---
+
 ## Cos'è
 
 Un tool che fa quattro cose e nient'altro:
@@ -367,6 +375,8 @@ dimostra. I più importanti:
   che li rendono visibili in gioco
 
 ---
+
+<a id="sviluppo-ia"></a>
 
 ## Come è stato sviluppato
 
