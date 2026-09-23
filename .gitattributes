@@ -1,0 +1,14 @@
+# I file di avvio devono restare con i fine riga di Windows:
+# cmd.exe non gradisce i fine riga Unix, e il launcher smetterebbe di funzionare.
+*.bat text eol=crlf
+
+# I file binari non vanno toccati ne' convertiti.
+*.jar binary
+*.png binary
+*.ico binary
+*.hg  binary
+
+# I sorgenti e la documentazione possono stare con i fine riga del sistema.
+*.java text
+*.md   text
+*.json text

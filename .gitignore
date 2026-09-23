@@ -1,0 +1,45 @@
+# ============================================================
+#  NMS ITALIA Corvette HUB - file che NON vanno nel repository
+# ============================================================
+#
+#  ATTENZIONE, la regola piu' importante di questo file:
+#  Backup/ contiene COPIE DEI SALVATAGGI DI GIOCO, cioe' dati
+#  personali di chi usa il programma. Non deve mai finire in un
+#  repository pubblico.
+
+# --- dati personali e di lavoro ---------------------------------
+Backup/
+Builds/
+CorvetteHUB.conf
+CorvetteHUB.log
+CorvetteHUB-avvio.log
+CorvetteHUB-console.log
+_tmp/
+.workbuddy-ai/
+
+# --- documenti di lavoro interni, non per il repository pubblico --
+#  Contengono percorsi della macchina di sviluppo e note di lavorazione.
+docs/AUDIT-PRE-RILASCIO.md
+docs/RILASCIO-GITHUB.md
+
+# --- output di compilazione -------------------------------------
+build/classes/
+*.class
+*.hub-tmp
+
+# --- pacchetto di distribuzione ---------------------------------
+#  dist/ contiene una copia del JRE: centinaia di MB che non hanno
+#  senso in un repository. Si ricostruisce con lo script di build.
+dist/
+*.zip
+
+# --- runtime incluso nel pacchetto (troppo grande per il repo) ---
+jre/
+tools/jdk8/
+
+# --- editor e sistema -------------------------------------------
+.vscode/
+.idea/
+*.iml
+Thumbs.db
+desktop.ini

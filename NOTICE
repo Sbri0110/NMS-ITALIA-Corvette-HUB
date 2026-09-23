@@ -1,0 +1,56 @@
+NMS ITALIA Corvette HUB
+Copyright 2026 Sbri
+
+Questo prodotto include software sviluppato da terze parti.
+
+--------------------------------------------------------------------------
+No Man's Sky save format, object database e logica di lettura
+--------------------------------------------------------------------------
+
+lib/nms-parser.jar contiene la logica di lettura e scrittura del formato dei
+salvataggi di No Man's Sky, ricostruita dal lavoro di:
+
+    Brendon Matthews (GoatFungus)
+    https://github.com/goatfungus/NMSSaveEditor
+
+Incluso per interoperabilita': permette di scambiare progetti di Corvette tra
+giocatori. Chi intende ridistribuirlo per altri scopi deve ottenere
+l'autorizzazione del titolare dei diritti.
+
+--------------------------------------------------------------------------
+FlatLaf
+--------------------------------------------------------------------------
+
+lib/flatlaf.jar e' FlatLaf, di FormDev Software GmbH.
+
+    https://www.formdev.com/flatlaf/
+    Licenza: Apache License 2.0
+
+--------------------------------------------------------------------------
+lz4-java
+--------------------------------------------------------------------------
+
+lib/nms-parser.jar include la libreria lz4-java di lz4/java.
+
+    https://github.com/lz4/lz4-java
+    Licenza: Apache License 2.0
+
+--------------------------------------------------------------------------
+Runtime Java
+--------------------------------------------------------------------------
+
+jre/ contiene Eclipse Temurin (OpenJDK 8), di Eclipse Adoptium.
+
+    https://adoptium.net/
+    Licenza: GPL v2 con Classpath Exception
+
+--------------------------------------------------------------------------
+Icone del gioco
+--------------------------------------------------------------------------
+
+lib/nms-icons.jar contiene icone di oggetti e tecnologie estratte da
+un'installazione locale di No Man's Sky.
+
+No Man's Sky e tutte le sue risorse sono marchi di Hello Games.
+Questo progetto non e' affiliato a Hello Games e non e' approvato da
+Hello Games.
