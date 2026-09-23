@@ -149,7 +149,6 @@ parser, e quella classe **non è inclusa** nelle librerie di questo progetto.
 |---|---|
 | [`docs/GUIDA-UTENTE.md`](docs/GUIDA-UTENTE.md) | le due schermate, spostare gli oggetti, il deposito, i backup |
 | [`docs/NOTE-TECNICHE.md`](docs/NOTE-TECNICHE.md) | i due formati di salvataggio, il parser, le icone, compilare dai sorgenti |
-| [`PIANO.md`](PIANO.md) | piano di lavoro e fatti verificati, con le prove |
 
 ---
 
@@ -179,9 +178,8 @@ dall'IA, che ha anche fatto la ricognizione sul formato dei salvataggi e le
 verifiche.
 
 Niente è stato preso per buono senza controllo: ogni affermazione sul formato
-dei salvataggi in `PIANO.md` ha accanto il comando o il file che la dimostra, e
-le funzioni che scrivono sono state provate su copie prima di arrivare ai
-salvataggi veri.
+dei salvataggi ha accanto il comando o il file che la dimostra, e le funzioni
+che scrivono sono state provate su copie prima di arrivare ai salvataggi veri.
 
 ---
 

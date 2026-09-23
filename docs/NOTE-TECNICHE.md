@@ -146,8 +146,6 @@ Ognuno è stato misurato su un salvataggio reale, non dedotto dal codice.
 - Il file `.hg` inizia con il magic `E5 A1 ED FE` quando è compresso LZ4.
   L'header `HGSAVEV2` **non** c'è su Steam: è del formato a contenitori.
 
-Il resto, con il comando o il file che lo dimostra, è in `PIANO.md`.
-
 ---
 
 ## Le trappole del decompilato
