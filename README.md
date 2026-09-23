@@ -368,6 +368,28 @@ dimostra. I più importanti:
 
 ---
 
+## Come è stato sviluppato
+
+Questo progetto è stato sviluppato **con l'aiuto dell'intelligenza
+artificiale**, e mi pare giusto dirlo chiaramente invece di lasciarlo
+intendere.
+
+Le scelte di merito sono umane: cosa il tool deve fare e cosa non deve fare,
+come trattare i salvataggi altrui, quando una scrittura è abbastanza sicura da
+essere proposta a un giocatore. Il codice è stato scritto in gran parte
+dall'IA, che ha anche fatto la ricognizione sul formato dei salvataggi e le
+verifiche.
+
+Niente è stato preso per buono senza controllo: ogni affermazione sul formato
+dei salvataggi in `PIANO.md` ha accanto il comando o il file che la dimostra, e
+le funzioni che scrivono sono state provate su copie prima di arrivare ai
+salvataggi veri.
+
+Se qualcosa non funziona come dovrebbe, la colpa non è "dell'IA": è di chi ha
+pubblicato senza verificare abbastanza. Le segnalazioni sono benvenute.
+
+---
+
 ## Domande, problemi, proposte
 
 Passa dal **Discord di NMS ITALIA**: <https://discord.gg/ZPwrQuATC4>
