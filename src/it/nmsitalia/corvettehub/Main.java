@@ -2,6 +2,7 @@ package it.nmsitalia.corvettehub;
 
 import it.nmsitalia.corvettehub.config.AppConfig;
 import it.nmsitalia.corvettehub.ui.MainFrame;
+import it.nmsitalia.corvettehub.ui.Scala;
 import it.nmsitalia.corvettehub.ui.Theme;
 
 import javax.swing.SwingUtilities;
@@ -16,13 +17,17 @@ import javax.swing.SwingUtilities;
 public final class Main {
 
     public static final String NOME = "NMS ITALIA Corvette HUB";
-    public static final String VERSIONE = "1.0.0";
+    public static final String VERSIONE = "1.1.0";
 
     private Main() {
     }
 
     public static void main(String[] args) {
         AppConfig config = AppConfig.carica();
+
+        // La scala va decisa PRIMA del tema e di qualunque componente: i font
+        // e le misure vengono costruiti una volta sola.
+        Scala.inizializza(config);
         Theme.installa();
 
         SwingUtilities.invokeLater(new Runnable() {

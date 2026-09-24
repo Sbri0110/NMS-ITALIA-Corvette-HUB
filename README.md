@@ -10,7 +10,7 @@ Applicazione desktop per Windows, dedicata esclusivamente alle Corvette di
 No Man's Sky.
 
 [![Licenza](https://img.shields.io/badge/licenza-Apache%202.0-blue.svg)](LICENSE)
-[![Versione](https://img.shields.io/badge/versione-1.0.0-orange.svg)](../../releases)
+[![Versione](https://img.shields.io/badge/versione-1.1.0-orange.svg)](../../releases)
 [![Piattaforma](https://img.shields.io/badge/piattaforma-Windows-0078D6.svg)](#requisiti)
 [![Discord](https://img.shields.io/badge/Discord-NMS%20ITALIA-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/ZPwrQuATC4)
 
@@ -31,18 +31,21 @@ No Man's Sky.
 
 ## Cos'è
 
-Un tool che fa quattro cose e nient'altro:
+Un tool che fa cinque cose e nient'altro:
 
 | | |
 |---|---|
 | **Importa** | porta un progetto di Corvette dentro una Corvette del tuo salvataggio |
 | **Esporta** | estrae una Corvette in un file condivisibile |
 | **Rinomina** | cambia il nome di una Corvette |
+| **Elimina** | toglie una Corvette dal salvataggio, restituendo i moduli al deposito della Stazione |
 | **Consultare** | i moduli della Stazione Spaziale, le tecnologie installate, i depositi delle basi |
 
-Il deposito si **legge e basta**: il tool non sblocca, non aggiunge e non
-riempie nulla. È uno scambio di progetti tra giocatori, non un editor
-generalista.
+Il tool non sblocca, non crea e non riempie nulla: nessun modulo compare dal
+nulla. L'unica aggiunta al deposito è il **recupero dei moduli che erano già
+sulla Corvette** quando la si elimina, e il deposito ha la capienza che ha il
+gioco: se non c'è posto, il tool si ferma e te lo dice invece di allargarla.
+È uno scambio di progetti tra giocatori, non un editor generalista.
 
 ---
 
@@ -52,7 +55,7 @@ generalista.
 
 <img src="docs/img/02-corvette.png" alt="Scheda Corvette" width="100%">
 
-<img src="docs/img/06-deposito.png" alt="Deposito dei moduli" width="100%">
+<img src="docs/img/07-deposito.png" alt="Deposito dei moduli" width="100%">
 
 <img src="docs/img/03-importa.png" alt="Importazione di un progetto" width="100%">
 
@@ -63,7 +66,9 @@ generalista.
 
 <img src="docs/img/05-rinomina.png" alt="Rinomina" width="100%">
 
-<img src="docs/img/07-libreria.png" alt="Libreria dei progetti" width="100%">
+<img src="docs/img/06-elimina.png" alt="Eliminazione di una Corvette" width="100%">
+
+<img src="docs/img/08-libreria.png" alt="Libreria dei progetti" width="100%">
 
 </details>
 
@@ -96,6 +101,12 @@ Il programma riconosce da solo dove sono i salvataggi. Se non li trova, il
 pulsante **Cambia cartella** permette di indicarli a mano: la scelta viene
 ricordata.
 
+**Su monitor 4K o con l'ingrandimento di Windows al 150–200%** l'interfaccia si
+adatta da sola: il programma legge il DPI dello schermo e ingrandisce testi,
+pulsanti e griglie nella stessa misura. Se l'ingrandimento non ti convince,
+puoi forzarlo a mano in `CorvetteHUB.conf` con la riga `UiScale=1.5` (i valori
+utili sono 1.25, 1.5, 1.75, 2).
+
 ---
 
 ## Sicurezza dei salvataggi
@@ -115,11 +126,38 @@ parte importante del programma.
 
 ---
 
+## Eliminare una Corvette
+
+È l'operazione più delicata del tool, e funziona al contrario di come si
+aspetta: **prima si smonta, poi si cancella.**
+
+1. I moduli da Corvette (`^B_...`) costruiti sulla nave tornano nel **deposito
+   della Stazione Spaziale**, impilati per tipo.
+2. Poi la Corvette e la sua nave vengono rimosse dal salvataggio, con tutti i
+   riferimenti rimessi in ordine.
+3. Prima di scrivere, la Corvette viene **esportata in `Builds/`**: il progetto
+   resta recuperabile anche dopo.
+
+Il deposito della Stazione ha una capienza **fissa** (10 × 16 = 160 celle) e il
+tool **non la allarga**: sarebbe barare. Se i moduli non ci stanno, si ferma e
+ti dice quante celle liberare. Poi le liberi in gioco e riprovi.
+
+Le decorazioni che non sono moduli da Corvette — luci, corridoi, porte —
+spariscono con la nave, come quando si elimina una base nel gioco. Il tool te
+le conta prima di procedere, e per confermare devi **scrivere il nome della
+Corvette**: un "sì" distratto non basta.
+
+La Corvette che stai usando in gioco non si può eliminare: il gioco la tiene in
+memoria e sovrascriverebbe la modifica. Cambia nave, salva, e riprova.
+
+---
+
 ## Cosa il tool NON fa, per scelta
 
 - Non sblocca moduli, prodotti o parti nella Stazione Spaziale
-- Non modifica classi, statistiche, inventari, potenziamenti, proprietario o
-  slot di una Corvette
+- Non allarga la capienza del deposito della Stazione
+- Non modifica classi, statistiche, potenziamenti, proprietario o slot di una
+  Corvette
 - Non tocca navi che non siano Corvette
 - Non modifica valuta, naniti, quicksilver, reputazione o traguardi
 - Non ha nessuna forma di "unlock tutto", trainer o cheat

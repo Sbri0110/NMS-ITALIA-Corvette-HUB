@@ -57,6 +57,7 @@ public final class SchermataCorvette extends JPanel {
     private final SchedaImporta schedaImporta;
     private final SchedaEsporta schedaEsporta;
     private final SchedaRinomina schedaRinomina;
+    private final SchedaElimina schedaElimina;
     private final SchedaDeposito schedaDeposito;
     private final SchedaLibreria schedaLibreria;
 
@@ -77,6 +78,15 @@ public final class SchermataCorvette extends JPanel {
         schedaImporta = new SchedaImporta();
         schedaEsporta = new SchedaEsporta(cartellaLibreria);
         schedaRinomina = new SchedaRinomina();
+        schedaElimina = new SchedaElimina(cartellaLibreria, new SchedaElimina.Ascoltatore() {
+            @Override
+            public void eliminazioneEseguita() {
+                // la Corvette non esiste piu': tutto quello che e' a schermo va riletto
+                if (rilevamentoCorrente != null && slot != null) {
+                    aggiorna(rilevamentoCorrente, slot);
+                }
+            }
+        });
         schedaDeposito = new SchedaDeposito(cartellaLibreria);
         schedaLibreria = new SchedaLibreria(cartellaLibreria, new SchedaLibreria.Ascoltatore() {
             @Override
@@ -97,7 +107,7 @@ public final class SchermataCorvette extends JPanel {
     private JPanel costruisciTestata() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(Theme.SUPERFICIE);
-        p.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        p.setBorder(Scala.bordo(12, 16, 12, 16));
 
         JPanel sinistra = new JPanel();
         sinistra.setOpaque(false);
@@ -105,11 +115,11 @@ public final class SchermataCorvette extends JPanel {
 
         JLabel logo = new JLabel();
         try {
-            logo.setIcon(Icone.logo(44));
+            logo.setIcon(Icone.logo(Scala.px(44)));
         } catch (Throwable ignored) {
             // senza logo la schermata funziona lo stesso
         }
-        logo.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 12));
+        logo.setBorder(Scala.bordo(0, 0, 0, 12));
 
         JPanel testi = new JPanel();
         testi.setOpaque(false);
@@ -120,7 +130,7 @@ public final class SchermataCorvette extends JPanel {
         titolo.setForeground(Theme.ACCENTO);
         titolo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        contesto.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        contesto.setFont(Scala.font(Font.PLAIN, 12));
         contesto.setForeground(Theme.TESTO_TENUE);
         contesto.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -137,7 +147,7 @@ public final class SchermataCorvette extends JPanel {
         // alto: nella scheda finirebbero sotto una griglia alta piu' di 700
         // pixel e si vedrebbero solo scorrendo.
         salvaModifiche = new JButton("Salva le modifiche");
-        salvaModifiche.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        salvaModifiche.setFont(Scala.font(Font.BOLD, 12));
         salvaModifiche.setEnabled(false);
         salvaModifiche.setToolTipText("Scrive sul salvataggio la nuova "
                 + "disposizione dell'inventario");
@@ -219,11 +229,12 @@ public final class SchermataCorvette extends JPanel {
     private JTabbedPane costruisciSchede() {
         schede.setBackground(Theme.SFONDO);
         schede.setForeground(Theme.TESTO);
-        schede.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        schede.setFont(Scala.font(Font.PLAIN, 13));
         schede.addTab("Corvette", schedaCorvette);
         schede.addTab("Importa", schedaImporta);
         schede.addTab("Esporta", schedaEsporta);
         schede.addTab("Rinomina", schedaRinomina);
+        schede.addTab("Elimina", schedaElimina);
         schede.addTab("Deposito", schedaDeposito);
         schede.addTab("Libreria", schedaLibreria);
         // cambiando scheda i pulsanti in alto si ricollegano a quella nuova
@@ -241,7 +252,7 @@ public final class SchermataCorvette extends JPanel {
         p.setBackground(Theme.SFONDO);
 
         JLabel t = new JLabel(titolo);
-        t.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        t.setFont(Scala.font(Font.BOLD, 16));
         t.setForeground(Theme.TESTO);
 
         JLabel b = new JLabel("<html><body style='width:560px'><pre style='font-family:"
@@ -251,7 +262,7 @@ public final class SchermataCorvette extends JPanel {
         JPanel centro = new JPanel();
         centro.setOpaque(false);
         centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
-        centro.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
+        centro.setBorder(Scala.bordo(40, 40, 40, 40));
         t.setAlignmentX(Component.LEFT_ALIGNMENT);
         b.setAlignmentX(Component.LEFT_ALIGNMENT);
         centro.add(t);
@@ -265,11 +276,11 @@ public final class SchermataCorvette extends JPanel {
     private JPanel costruisciBarraStato() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(Theme.SUPERFICIE);
-        p.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 16));
+        p.setBorder(Scala.bordo(6, 16, 6, 16));
 
         messaggio.setForeground(Theme.TESTO_TENUE);
-        messaggio.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        statoGioco.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        messaggio.setFont(Scala.font(Font.PLAIN, 12));
+        statoGioco.setFont(Scala.font(Font.PLAIN, 12));
 
         JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         destra.setOpaque(false);
@@ -310,6 +321,7 @@ public final class SchermataCorvette extends JPanel {
                     schedaImporta.aggiorna(r, slot, esito);
                     schedaEsporta.aggiorna(slot, esito, autore);
                     schedaRinomina.aggiorna(r, slot, esito);
+                    schedaElimina.aggiorna(r, slot, esito);
                     schedaDeposito.aggiorna(r, slot,
                             "Slot " + slot.getNumero() + " · " + slot.getModalita());
                     schedaLibreria.ricarica();

@@ -44,7 +44,10 @@ public final class Theme {
     public static void installa() {
         FlatDarkLaf.setup();
 
-        Font base = new Font("Segoe UI", Font.PLAIN, 13);
+        // Il font di base passa dalla scala: su un monitor 4K diventa grande il
+        // doppio, e con lui crescono anche le metriche che FlatLaf calcola dai
+        // font (altezza delle righe, spaziature interne).
+        Font base = Scala.font(Font.PLAIN, 13);
         UIManager.put("defaultFont", base);
 
         UIManager.put("Panel.background", SFONDO);
@@ -54,9 +57,14 @@ public final class Theme {
         UIManager.put("Component.borderColor", BORDO);
         UIManager.put("Component.focusColor", ACCENTO);
         UIManager.put("Component.focusWidth", 1);
-        UIManager.put("Component.arc", 8);
-        UIManager.put("Button.arc", 8);
-        UIManager.put("TextComponent.arc", 8);
+        UIManager.put("Component.arc", Scala.px(8));
+        UIManager.put("Button.arc", Scala.px(8));
+        UIManager.put("TextComponent.arc", Scala.px(8));
+        // Le metriche di FlatLaf sono in pixel e non seguono il font: qui
+        // seguono la scala, altrimenti su 4K resterebbero fili sottili.
+        UIManager.put("ScrollBar.width", Scala.px(14));
+        UIManager.put("ScrollBar.thumbArc", Scala.px(999));
+        UIManager.put("ScrollBar.trackArc", Scala.px(999));
 
         UIManager.put("List.background", SUPERFICIE);
         UIManager.put("List.foreground", TESTO);
@@ -79,14 +87,14 @@ public final class Theme {
     }
 
     public static Font titolo() {
-        return new Font("Segoe UI", Font.BOLD, 15);
+        return Scala.font(Font.BOLD, 15);
     }
 
     public static Font sezione() {
-        return new Font("Segoe UI", Font.BOLD, 12);
+        return Scala.font(Font.BOLD, 12);
     }
 
     public static Font monospazio() {
-        return new Font("Consolas", Font.PLAIN, 12);
+        return Scala.mono(12);
     }
 }

@@ -9,7 +9,7 @@ partita** si lavora, poi si lavora.
 solo dove il tool ha trovato i salvataggi e quali slot esistono, con modalità,
 nome, ore giocate e data. Si sceglie lo slot e si preme **Continua**.
 
-**Schermata 2 — Hub della Corvette.** Sei schede:
+**Schermata 2 — Hub della Corvette.** Sette schede:
 
 | Scheda | Cosa fa |
 |---|---|
@@ -17,6 +17,7 @@ nome, ore giocate e data. Si sceglie lo slot e si preme **Continua**.
 | **Importa** | porta un progetto dentro una Corvette, con controllo di compatibilità |
 | **Esporta** | estrae una Corvette in un progetto condivisibile, con anteprima |
 | **Rinomina** | cambia il nome di una Corvette, con backup e verifica |
+| **Elimina** | toglie una Corvette e restituisce i moduli al deposito della Stazione |
 | **Deposito** | moduli della Stazione Spaziale, a griglia, con icone e filtri |
 | **Libreria** | i progetti salvati, con anteprima, ricerca ed eliminazione |
 
@@ -71,6 +72,70 @@ Due avvertenze:
 
 Il salvataggio passa dalle stesse cautele delle altre scritture: gioco chiuso,
 backup verificato, entrambi i file dello slot, rilettura di conferma.
+
+---
+
+## Eliminare una Corvette
+
+La scheda **Elimina** toglie una Corvette dal salvataggio. Funziona al
+contrario di come si aspetta: **prima smonta, poi cancella.**
+
+1. I moduli da Corvette (`^B_...`) tornano nel **deposito della Stazione
+   Spaziale**, impilati per tipo.
+2. Poi la Corvette e la sua nave vengono rimosse dal salvataggio.
+3. Prima di scrivere, la Corvette viene **esportata in `Builds/`**: il progetto
+   resta recuperabile anche dopo l'eliminazione.
+
+### Il deposito non si allarga
+
+Il deposito della Stazione ha una capienza **fissa**: 10 × 16 = **160 celle**.
+Il tool non la aumenta, perché sarebbe barare. Quando apri la scheda, il
+riquadro *Cosa succede* ti dice esattamente:
+
+- quanti moduli ha la Corvette e di quanti tipi;
+- quanti di quei tipi sono già nel deposito;
+- **quante celle servono** e **quante ne sono libere**.
+
+Se le celle libere non bastano, il pulsante resta spento e il tool ti dice
+quante liberarne. Le liberi in gioco (spostando o vendendo moduli), poi torni
+qui e riprovi.
+
+### Le decorazioni
+
+Su una Corvette possono esserci parti che non sono moduli da Corvette: luci,
+corridoi, porte. Il deposito della Stazione accetta **solo** `^B_...`, quindi
+quelle spariscono con la nave — esattamente come quando si elimina una base nel
+gioco. Il tool te le conta prima di procedere.
+
+### La conferma
+
+Per confermare devi **scrivere il nome della Corvette**. Non è una formalità:
+l'operazione non si annulla, e il nome va scritto per essere sicuri di aver
+capito quale nave si sta eliminando. Se il nome non corrisponde, non succede
+nulla.
+
+### Quando non si può
+
+- **La Corvette in uso** non si elimina: il gioco la tiene in memoria e
+  sovrascriverebbe la modifica. Cambia nave in gioco, salva, e riprova.
+- **Il gioco deve essere chiuso**, come per tutte le scritture.
+- **Il deposito deve avere posto** per tutti i moduli (vedi sopra).
+
+### Cosa cambia nel salvataggio
+
+L'eliminazione tocca quattro cose, e nient'altro:
+
+| Cosa | Prima | Dopo |
+|---|---|---|
+| `PersistentPlayerBases` | contiene la Corvette | la Corvette non c'è più |
+| `ShipOwnership` | contiene la nave della Corvette | la nave non c'è più |
+| `ShipUsesLegacyColours` | un valore per nave | resta lungo quanto le navi |
+| `PrimaryShip` | indice della nave in uso | **rimappato** se era oltre quella rimossa |
+
+E se nel salvataggio ci sono altre Corvette, i loro riferimenti alla nave
+vengono spostati di conseguenza. Dopo la scrittura il tool **rilegge tutto e
+verifica**: se un solo riferimento fosse rimasto rotto, rimetterebbe a posto il
+backup da solo.
 
 ---
 
@@ -142,7 +207,7 @@ Accanto al programma:
 
 | File | Cosa contiene |
 |---|---|
-| `CorvetteHUB.conf` | la cartella dei salvataggi scelta |
+| `CorvetteHUB.conf` | la cartella dei salvataggi scelta, e la scala dell'interfaccia |
 | `Builds/` | i progetti esportati |
 | `Backup/` | i backup, con data e ora |
 | `CorvetteHUB.log` | cosa è stato fatto e com'è finita |
@@ -151,3 +216,26 @@ Accanto al programma:
 
 I log non contengono dati personali oltre al nome del giocatore, che è già
 dentro il salvataggio.
+
+---
+
+## Se il testo è troppo piccolo (monitor 4K)
+
+Il programma legge il **DPI dello schermo** all'avvio e ingrandisce di
+conseguenza testi, pulsanti, griglie e margini. Su un 4K con l'ingrandimento di
+Windows al 150% o al 200% non devi fare niente: si adatta da solo.
+
+Se l'ingrandimento non ti convince, apri `CorvetteHUB.conf` con Blocco note e
+aggiungi una riga:
+
+```
+UiScale=1.5
+```
+
+I valori utili sono `1.25`, `1.5`, `1.75`, `2`, `2.5`, `3`. Per tornare
+all'automatico, cancella la riga. La scala si applica alla riapertura del
+programma.
+
+La finestra si **ridimensiona trascinando i bordi**, come qualunque altro
+programma. La dimensione di partenza si adatta allo schermo: su un 4K non
+parte mai più grande del monitor.

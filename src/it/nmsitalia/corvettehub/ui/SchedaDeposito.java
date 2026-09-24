@@ -102,13 +102,13 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(12, 16, 8, 16));
+        p.setBorder(Scala.bordo(12, 16, 8, 16));
 
-        intestazione.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        intestazione.setFont(Scala.font(Font.BOLD, 14));
         intestazione.setForeground(Theme.TESTO);
         intestazione.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        contatore.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        contatore.setFont(Scala.font(Font.PLAIN, 12));
         contatore.setForeground(Theme.ACCENTO);
         contatore.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -117,7 +117,7 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         rigaCerca.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel l2 = new JLabel("Cerca:");
         l2.setForeground(Theme.TESTO_TENUE);
-        cerca.setPreferredSize(new Dimension(240, 26));
+        cerca.setPreferredSize(Scala.dim(240, 26));
         rigaCerca.add(l2);
         rigaCerca.add(cerca);
 
@@ -154,26 +154,26 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
     private Component costruisciCorpo() {
         griglia.setLayout(new BoxLayout(griglia, BoxLayout.Y_AXIS));
         griglia.setBackground(Theme.SFONDO);
-        griglia.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        griglia.setBorder(Scala.bordo(8, 8, 8, 8));
 
         JScrollPane scrollGriglia = new JScrollPane(griglia);
         scrollGriglia.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
-        scrollGriglia.getVerticalScrollBar().setUnitIncrement(28);
+        scrollGriglia.getVerticalScrollBar().setUnitIncrement(Scala.px(28));
 
         JPanel sinistra = new JPanel(new BorderLayout());
         sinistra.setOpaque(false);
-        sinistra.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 4));
+        sinistra.setBorder(Scala.bordo(0, 8, 0, 4));
         sinistra.add(scrollGriglia, BorderLayout.CENTER);
 
         compatibilita.setEditable(false);
         compatibilita.setBackground(Theme.SUPERFICIE);
         compatibilita.setForeground(Theme.TESTO);
         compatibilita.setFont(Theme.monospazio());
-        compatibilita.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        compatibilita.setBorder(Scala.bordo(10, 12, 10, 12));
 
         JPanel destra = new JPanel(new BorderLayout());
         destra.setOpaque(false);
-        destra.setMinimumSize(new Dimension(320, 100));
+        destra.setMinimumSize(Scala.dim(320, 100));
 
         JPanel testaDestra = new JPanel();
         testaDestra.setOpaque(false);
@@ -190,7 +190,7 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         JLabel lb = new JLabel("Build:");
         lb.setForeground(Theme.TESTO_TENUE);
         rigaBuild.add(lb);
-        sceltaBuild.setPreferredSize(new Dimension(210, 26));
+        sceltaBuild.setPreferredSize(Scala.dim(210, 26));
         sceltaBuild.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -220,10 +220,10 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(10, 16, 14, 16));
+        p.setBorder(Scala.bordo(10, 16, 14, 16));
 
         riepilogo.setForeground(Theme.TESTO_TENUE);
-        riepilogo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        riepilogo.setFont(Scala.font(Font.PLAIN, 12));
 
         JButton esporta = new JButton("Esporta elenco (CSV)...");
         esporta.addActionListener(new ActionListener() {
@@ -490,8 +490,8 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
     private JLabel messaggio(String testo) {
         JLabel l = new JLabel(testo);
         l.setForeground(Theme.TESTO_TENUE);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        l.setBorder(BorderFactory.createEmptyBorder(20, 8, 20, 8));
+        l.setFont(Scala.font(Font.PLAIN, 12));
+        l.setBorder(Scala.bordo(20, 8, 20, 8));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;
     }
@@ -660,7 +660,7 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
             setFocusPainted(false);
             setOpaque(false);
             setText(categoria + "  " + quanti);
-            setFont(new Font("Segoe UI", scelta ? Font.BOLD : Font.PLAIN, 11));
+            setFont(Scala.font(scelta ? Font.BOLD : Font.PLAIN, 11));
             setForeground(scelta ? Color.WHITE : Theme.TESTO);
             setMargin(new java.awt.Insets(4, 12, 4, 12));
             setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));

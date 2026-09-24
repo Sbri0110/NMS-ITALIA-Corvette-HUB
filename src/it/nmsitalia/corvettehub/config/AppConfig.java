@@ -23,6 +23,13 @@ public final class AppConfig {
     public static final String CHIAVE_TIPO = "GameStorage";
     public static final String CHIAVE_LIMITE_BACKUP = "BackupRetention";
 
+    /**
+     * La scala dell'interfaccia: "auto" (dal DPI dello schermo) oppure un
+     * numero, per esempio "1.5". Serve ai monitor 4K, dove l'ingrandimento di
+     * Windows non basta al programma.
+     */
+    public static final String CHIAVE_SCALA = "UiScale";
+
     private final File file;
     private final Properties props = new Properties();
 
@@ -95,6 +102,11 @@ public final class AppConfig {
             props.setProperty(CHIAVE_LIMITE_BACKUP, "20");
         }
         salva();
+    }
+
+    /** La scala richiesta per l'interfaccia, oppure "auto". */
+    public String scalaInterfaccia() {
+        return props.getProperty(CHIAVE_SCALA, "auto");
     }
 
     public void dimentica() {

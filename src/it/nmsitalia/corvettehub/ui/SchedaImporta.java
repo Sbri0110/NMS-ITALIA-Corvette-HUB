@@ -89,20 +89,20 @@ public final class SchedaImporta extends JPanel {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 10));
-        p.setPreferredSize(new Dimension(420, 100));
+        p.setBorder(Scala.bordo(16, 16, 16, 10));
+        p.setPreferredSize(Scala.dim(420, 100));
 
         JLabel t = new JLabel("Progetto da importare");
-        t.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        t.setFont(Scala.font(Font.BOLD, 14));
         t.setForeground(Theme.TESTO);
         t.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         zonaRilascio.setText("Trascina qui il file .json del progetto");
         zonaRilascio.setHorizontalAlignment(JLabel.CENTER);
         zonaRilascio.setVerticalAlignment(JLabel.CENTER);
-        zonaRilascio.setPreferredSize(new Dimension(380, 84));
-        zonaRilascio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 84));
-        zonaRilascio.setMinimumSize(new Dimension(200, 84));
+        zonaRilascio.setPreferredSize(Scala.dim(380, 84));
+        zonaRilascio.setMaximumSize(Scala.dimLarga(84));
+        zonaRilascio.setMinimumSize(Scala.dim(200, 84));
         zonaRilascio.setOpaque(true);
         zonaRilascio.setBackground(Theme.SUPERFICIE);
         zonaRilascio.setForeground(Theme.TESTO_TENUE);
@@ -123,12 +123,12 @@ public final class SchedaImporta extends JPanel {
         anteprima.setBackground(Theme.SUPERFICIE);
         anteprima.setForeground(Theme.TESTO);
         anteprima.setFont(Theme.monospazio());
-        anteprima.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        anteprima.setBorder(Scala.bordo(10, 12, 10, 12));
         JScrollPane scrollAnteprima = new JScrollPane(anteprima);
         scrollAnteprima.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
         scrollAnteprima.setAlignmentX(Component.LEFT_ALIGNMENT);
-        scrollAnteprima.setPreferredSize(new Dimension(380, 260));
-        scrollAnteprima.setMaximumSize(new Dimension(Integer.MAX_VALUE, 400));
+        scrollAnteprima.setPreferredSize(Scala.dim(380, 260));
+        scrollAnteprima.setMaximumSize(Scala.dimLarga(400));
 
         p.add(t);
         p.add(Box.createVerticalStrut(10));
@@ -147,15 +147,15 @@ public final class SchedaImporta extends JPanel {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(16, 6, 0, 16));
+        p.setBorder(Scala.bordo(16, 6, 0, 16));
 
         JLabel t = new JLabel("Corvette di destinazione");
-        t.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        t.setFont(Scala.font(Font.BOLD, 14));
         t.setForeground(Theme.TESTO);
         t.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         sceltaCorvette.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sceltaCorvette.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        sceltaCorvette.setMaximumSize(Scala.dimLarga(28));
         sceltaCorvette.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -165,14 +165,14 @@ public final class SchedaImporta extends JPanel {
 
         usaNomeBuild.setOpaque(false);
         usaNomeBuild.setForeground(Theme.TESTO_TENUE);
-        usaNomeBuild.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        usaNomeBuild.setFont(Scala.font(Font.PLAIN, 12));
         usaNomeBuild.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         compatibilita.setEditable(false);
         compatibilita.setBackground(Theme.SUPERFICIE);
         compatibilita.setForeground(Theme.TESTO);
         compatibilita.setFont(Theme.monospazio());
-        compatibilita.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        compatibilita.setBorder(Scala.bordo(10, 12, 10, 12));
         JScrollPane scrollCompat = new JScrollPane(compatibilita);
         scrollCompat.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
         scrollCompat.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -194,11 +194,11 @@ public final class SchedaImporta extends JPanel {
         esito.setBackground(Theme.SUPERFICIE);
         esito.setForeground(Theme.TESTO);
         esito.setFont(Theme.monospazio());
-        esito.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        esito.setBorder(Scala.bordo(10, 12, 10, 12));
         JScrollPane scrollEsito = new JScrollPane(esito);
         scrollEsito.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
         scrollEsito.setAlignmentX(Component.LEFT_ALIGNMENT);
-        scrollEsito.setPreferredSize(new Dimension(400, 150));
+        scrollEsito.setPreferredSize(Scala.dim(400, 150));
         p.add(scrollEsito);
         p.add(Box.createVerticalGlue());
         return p;
@@ -207,9 +207,9 @@ public final class SchedaImporta extends JPanel {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(8, 16, 14, 16));
+        p.setBorder(Scala.bordo(8, 16, 14, 16));
 
-        importa.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        importa.setFont(Scala.font(Font.BOLD, 13));
         importa.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -223,7 +223,7 @@ public final class SchedaImporta extends JPanel {
     private JLabel etichetta(String testo) {
         JLabel l = new JLabel(testo);
         l.setForeground(Theme.TESTO_TENUE);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setFont(Scala.font(Font.PLAIN, 12));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;
     }

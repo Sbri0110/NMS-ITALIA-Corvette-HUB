@@ -75,11 +75,11 @@ public final class SchermataSalvataggi extends JPanel {
     private JPanel costruisciTestata() {
         JPanel p = new JPanel(new BorderLayout(20, 0));
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(32, 44, 20, 44));
+        p.setBorder(Scala.bordo(32, 44, 20, 44));
 
         JLabel logo = new JLabel();
         try {
-            logo.setIcon(Icone.logo(96));
+            logo.setIcon(Icone.logo(Scala.px(96)));
         } catch (Throwable ignored) {
             // senza logo la schermata funziona lo stesso
         }
@@ -89,17 +89,17 @@ public final class SchermataSalvataggi extends JPanel {
         testi.setLayout(new BoxLayout(testi, BoxLayout.Y_AXIS));
 
         JLabel titolo = new JLabel(Main.NOME);
-        titolo.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titolo.setFont(Scala.font(Font.BOLD, 26));
         titolo.setForeground(Theme.ACCENTO);
         titolo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         sottotitolo.setText("Scegli il salvataggio da usare. Nulla viene modificato "
                 + "in questa fase.");
-        sottotitolo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        sottotitolo.setFont(Scala.font(Font.PLAIN, 13));
         sottotitolo.setForeground(Theme.TESTO_TENUE);
         sottotitolo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        stato.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        stato.setFont(Scala.font(Font.PLAIN, 12));
         stato.setForeground(Theme.TESTO_TENUE);
         stato.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -119,9 +119,9 @@ public final class SchermataSalvataggi extends JPanel {
     private JPanel costruisciCorpo() {
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lista.setCellRenderer(new RendererSlot());
-        lista.setFixedCellHeight(64);
+        lista.setFixedCellHeight(Scala.px(64));
         lista.setBackground(Theme.SUPERFICIE);
-        lista.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        lista.setBorder(Scala.bordo(6, 6, 6, 6));
         lista.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -140,12 +140,12 @@ public final class SchermataSalvataggi extends JPanel {
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(0, 44, 0, 44));
+        p.setBorder(Scala.bordo(0, 44, 0, 44));
 
         JLabel t = new JLabel("Slot disponibili");
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
-        t.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+        t.setBorder(Scala.bordo(0, 0, 8, 0));
 
         p.add(t, BorderLayout.NORTH);
         p.add(scroll, BorderLayout.CENTER);
@@ -155,10 +155,10 @@ public final class SchermataSalvataggi extends JPanel {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(16, 44, 30, 44));
+        p.setBorder(Scala.bordo(16, 44, 30, 44));
 
         messaggio.setForeground(Theme.TESTO_TENUE);
-        messaggio.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        messaggio.setFont(Scala.font(Font.PLAIN, 12));
 
         JButton cambia = new JButton("Cambia cartella...");
         cambia.addActionListener(new ActionListener() {
@@ -169,7 +169,7 @@ public final class SchermataSalvataggi extends JPanel {
         });
 
         continua.setEnabled(false);
-        continua.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        continua.setFont(Scala.font(Font.BOLD, 13));
         continua.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -314,9 +314,9 @@ public final class SchermataSalvataggi extends JPanel {
 
         RendererSlot() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-            riga1.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            riga2.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            setBorder(Scala.bordo(8, 12, 8, 12));
+            riga1.setFont(Scala.font(Font.BOLD, 14));
+            riga2.setFont(Scala.font(Font.PLAIN, 12));
             add(riga1);
             add(Box.createVerticalStrut(3));
             add(riga2);
@@ -329,7 +329,7 @@ public final class SchermataSalvataggi extends JPanel {
             if (s.isVuoto()) {
                 riga1.setText("Slot " + s.getNumero() + "   ·   libero");
                 riga2.setText("nessun salvataggio in questo slot");
-                riga1.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+                riga1.setFont(Scala.font(Font.PLAIN, 14));
                 if (selezionato) {
                     setBackground(Theme.ACCENTO_SCURO);
                     riga1.setForeground(Color.WHITE);
@@ -342,7 +342,7 @@ public final class SchermataSalvataggi extends JPanel {
                 return this;
             }
 
-            riga1.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            riga1.setFont(Scala.font(Font.BOLD, 14));
             riga1.setText("Slot " + s.getNumero() + "   ·   " + s.getModalita());
             String nome = s.getNomeSalvataggio();
             String ore = s.getOreFormattate();
@@ -366,6 +366,6 @@ public final class SchermataSalvataggi extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(920, 620);
+        return Scala.dim(920, 620);
     }
 }

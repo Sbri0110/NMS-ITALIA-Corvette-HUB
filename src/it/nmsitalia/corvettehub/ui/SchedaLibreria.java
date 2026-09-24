@@ -132,28 +132,28 @@ public final class SchedaLibreria extends JPanel {
 
         sinistra.add(titolo, BorderLayout.NORTH);
         sinistra.add(scrollLista, BorderLayout.CENTER);
-        sinistra.setBorder(BorderFactory.createEmptyBorder(14, 16, 0, 8));
+        sinistra.setBorder(Scala.bordo(14, 16, 0, 8));
 
         dettaglio.setEditable(false);
         dettaglio.setBackground(Theme.SUPERFICIE);
         dettaglio.setForeground(Theme.TESTO);
         dettaglio.setFont(Theme.monospazio());
-        dettaglio.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        dettaglio.setBorder(Scala.bordo(10, 12, 10, 12));
 
         JScrollPane scrollDettaglio = new JScrollPane(dettaglio);
         scrollDettaglio.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
 
         JPanel destra = new JPanel(new BorderLayout());
         destra.setOpaque(false);
-        destra.setBorder(BorderFactory.createEmptyBorder(14, 8, 0, 16));
+        destra.setBorder(Scala.bordo(14, 8, 0, 16));
 
         JLabel t2 = new JLabel("Anteprima del progetto");
         t2.setFont(Theme.sezione());
         t2.setForeground(Theme.TESTO_TENUE);
-        t2.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        t2.setBorder(Scala.bordo(0, 0, 6, 0));
 
-        anteprima.setPreferredSize(new Dimension(520, 230));
-        scrollDettaglio.setPreferredSize(new Dimension(520, 190));
+        anteprima.setPreferredSize(Scala.dim(520, 230));
+        scrollDettaglio.setPreferredSize(Scala.dim(520, 190));
 
         destra.add(t2, BorderLayout.NORTH);
         destra.add(anteprima, BorderLayout.CENTER);
@@ -170,10 +170,10 @@ public final class SchedaLibreria extends JPanel {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(10, 16, 14, 16));
+        p.setBorder(Scala.bordo(10, 16, 14, 16));
 
         stato.setForeground(Theme.TESTO_TENUE);
-        stato.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        stato.setFont(Scala.font(Font.PLAIN, 12));
 
         JButton apri = new JButton("Apri cartella");
         apri.addActionListener(new ActionListener() {
@@ -359,7 +359,7 @@ public final class SchedaLibreria extends JPanel {
 
         RendererProgetto() {
             setOpaque(true);
-            setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+            setBorder(Scala.bordo(6, 12, 6, 12));
         }
 
         @Override
@@ -372,7 +372,7 @@ public final class SchedaLibreria extends JPanel {
             String data = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(f.lastModified()));
             setText("<html><b>" + escape(nome) + "</b><br><span style='font-size:10px'>"
                     + data + " · " + (f.length() / 1024) + " KB</span></html>");
-            setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            setFont(Scala.font(Font.PLAIN, 12));
             setBackground(sel ? Theme.ACCENTO_SCURO : Theme.SUPERFICIE);
             setForeground(sel ? java.awt.Color.WHITE : Theme.TESTO);
             return this;

@@ -75,15 +75,15 @@ public final class SchedaRinomina extends JPanel {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 12));
-        p.setPreferredSize(new Dimension(400, 100));
+        p.setBorder(Scala.bordo(16, 16, 16, 12));
+        p.setPreferredSize(Scala.dim(400, 100));
 
-        intestazione.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        intestazione.setFont(Scala.font(Font.BOLD, 14));
         intestazione.setForeground(Theme.TESTO);
         intestazione.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         sceltaCorvette.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sceltaCorvette.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        sceltaCorvette.setMaximumSize(Scala.dimLarga(28));
         sceltaCorvette.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -91,12 +91,12 @@ public final class SchedaRinomina extends JPanel {
             }
         });
 
-        nomeAttuale.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        nomeAttuale.setFont(Scala.font(Font.BOLD, 13));
         nomeAttuale.setForeground(Theme.ACCENTO);
         nomeAttuale.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         nomeNuovo.setAlignmentX(Component.LEFT_ALIGNMENT);
-        nomeNuovo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        nomeNuovo.setMaximumSize(Scala.dimLarga(28));
         nomeNuovo.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -114,7 +114,7 @@ public final class SchedaRinomina extends JPanel {
             }
         });
 
-        anteprima.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        anteprima.setFont(Scala.font(Font.PLAIN, 12));
         anteprima.setForeground(Theme.TESTO_TENUE);
         anteprima.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -140,7 +140,7 @@ public final class SchedaRinomina extends JPanel {
                 + "<b>entrambi</b> i file dello slot, poi rilegge per confermare. "
                 + "Se qualcosa non torna, rimette a posto da solo.</body></html>");
         nota.setForeground(Theme.TESTO_TENUE);
-        nota.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        nota.setFont(Scala.font(Font.PLAIN, 11));
         nota.setAlignmentX(Component.LEFT_ALIGNMENT);
         p.add(nota);
         return p;
@@ -151,16 +151,16 @@ public final class SchedaRinomina extends JPanel {
         esito.setBackground(Theme.SUPERFICIE);
         esito.setForeground(Theme.TESTO);
         esito.setFont(Theme.monospazio());
-        esito.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        esito.setBorder(Scala.bordo(10, 12, 10, 12));
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(16, 0, 0, 16));
+        p.setBorder(Scala.bordo(16, 0, 0, 16));
 
         JLabel t = new JLabel("Esito");
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
-        t.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        t.setBorder(Scala.bordo(0, 0, 6, 0));
 
         p.add(t, BorderLayout.NORTH);
         p.add(new JScrollPane(esito), BorderLayout.CENTER);
@@ -170,8 +170,8 @@ public final class SchedaRinomina extends JPanel {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(8, 16, 14, 16));
-        rinomina.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        p.setBorder(Scala.bordo(8, 16, 14, 16));
+        rinomina.setFont(Scala.font(Font.BOLD, 13));
         rinomina.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -185,7 +185,7 @@ public final class SchedaRinomina extends JPanel {
     private JLabel etichetta(String testo) {
         JLabel l = new JLabel(testo);
         l.setForeground(Theme.TESTO_TENUE);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setFont(Scala.font(Font.PLAIN, 12));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;
     }

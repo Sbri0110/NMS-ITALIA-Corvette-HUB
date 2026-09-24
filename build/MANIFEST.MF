@@ -1,5 +1,7 @@
 Manifest-Version: 1.0
-Main-Class: it.nmsitalia.corvettehub.Main
-Class-Path: lib/nms-parser.jar lib/flatlaf.jar lib/nms-icons.jar
 Implementation-Title: NMS ITALIA Corvette HUB
-Implementation-Version: 1.0.0
+Implementation-Version: 1.1.0
+Class-Path: lib/nms-parser.jar lib/flatlaf.jar lib/nms-icons.jar
+Created-By: 1.8.0_504 (Temurin)
+Main-Class: it.nmsitalia.corvettehub.Main
+

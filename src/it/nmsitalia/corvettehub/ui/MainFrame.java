@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.File;
 
 /**
@@ -69,14 +70,25 @@ public final class MainFrame extends JFrame {
 
         setContentPane(contenitore);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1080, 700));
-        setPreferredSize(new Dimension(1280, 820));
 
         applicaIcona();
 
         mostraSalvataggi();
 
-        pack();
+        // La finestra si ridimensiona trascinando i bordi, come qualunque altro
+        // programma: niente dimensione preferita e niente pack(), che la
+        // bloccherebbe sulla misura del contenuto.
+        //
+        // Misura di partenza e minimo stanno dentro lo schermo: su un 4K con la
+        // scala al 200% una finestra da 1280 punti diventerebbe 2560 pixel e
+        // uscirebbe dallo schermo.
+        Dimension schermo = Toolkit.getDefaultToolkit().getScreenSize();
+        setMinimumSize(new Dimension(
+                Math.min(Scala.px(880), schermo.width - Scala.px(80)),
+                Math.min(Scala.px(560), schermo.height - Scala.px(120))));
+        setSize(
+                Math.min(Scala.px(1280), schermo.width - Scala.px(60)),
+                Math.min(Scala.px(820), schermo.height - Scala.px(120)));
         setLocationRelativeTo(null);
     }
 

@@ -51,7 +51,7 @@ public final class Anteprima extends JPanel {
 
         if (corvette == null || corvette.getPosizioniModuli().isEmpty()) {
             g.setColor(Theme.TESTO_TENUE);
-            g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            g.setFont(Scala.font(Font.PLAIN, 12));
             String msg = corvette == null
                     ? "Scegli una Corvette per vederne l'anteprima."
                     : "Questa Corvette non ha moduli da disegnare.";
@@ -87,7 +87,7 @@ public final class Anteprima extends JPanel {
 
         // riga di ingombro
         g.setColor(Theme.TESTO_TENUE);
-        g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        g.setFont(Scala.font(Font.PLAIN, 11));
         g.drawString(String.format("Ingombro %.0f x %.0f x %.0f m   ·   %d moduli",
                 maxX - minX, maxY - minY, maxZ - minZ, pos.size()),
                 margine, h - 8);
@@ -107,7 +107,7 @@ public final class Anteprima extends JPanel {
         g.drawRoundRect(x0, y0, larg, alt, 10, 10);
 
         g.setColor(Theme.TESTO_TENUE);
-        g.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        g.setFont(Scala.font(Font.BOLD, 11));
         g.drawString(titolo, x0 + 10, y0 - 4);
 
         double spanO = Math.max(1.0, maxX - minX);

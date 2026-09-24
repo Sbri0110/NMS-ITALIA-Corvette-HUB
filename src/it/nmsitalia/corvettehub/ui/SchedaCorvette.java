@@ -103,10 +103,10 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
 
         JPanel testata = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
         testata.setOpaque(false);
-        testata.setBorder(BorderFactory.createEmptyBorder(4, 8, 0, 8));
+        testata.setBorder(Scala.bordo(4, 8, 0, 8));
         JLabel l = new JLabel("Corvette:");
         l.setForeground(Theme.TESTO_TENUE);
-        sceltaCorvette.setPreferredSize(new Dimension(320, 28));
+        sceltaCorvette.setPreferredSize(Scala.dim(320, 28));
         sceltaCorvette.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -123,7 +123,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
 
         JScrollPane scroll = new JScrollPane(contenuto);
         scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(28);
+        scroll.getVerticalScrollBar().setUnitIncrement(Scala.px(28));
 
         add(testata, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
@@ -291,21 +291,21 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
             b.setBackground(Theme.AVVISO_SCURO);
             b.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(Theme.AVVISO),
-                    BorderFactory.createEmptyBorder(6, 10, 6, 10)));
+                    Scala.bordo(6, 10, 6, 10)));
             scritta.setText(n + (n == 1 ? " oggetto spostato" : " oggetti spostati")
                     + ": usa Salva le modifiche nella barra in alto");
             scritta.setForeground(Theme.TESTO);
-            scritta.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            scritta.setFont(Scala.font(Font.BOLD, 12));
         } else {
             b.setBackground(Theme.SFONDO);
-            b.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
+            b.setBorder(Scala.bordo(6, 0, 6, 0));
             scritta.setText("Trascina un oggetto per spostarlo   ·   "
                     + lay.getNumeroPezzi() + " su "
                     + (lay.getLarghezza() * lay.getAltezza()) + " celle"
                     + (tecnologia
                     ? "   ·   spostare le tecnologie cambia i bonus di adiacenza" : ""));
             scritta.setForeground(Theme.TESTO_TENUE);
-            scritta.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            scritta.setFont(Scala.font(Font.PLAIN, 12));
         }
         b.add(scritta);
         return b;
@@ -472,10 +472,10 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(12, 16, 6, 16));
+        p.setBorder(Scala.bordo(12, 16, 6, 16));
 
         JLabel nome = new JLabel(c.getNome());
-        nome.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        nome.setFont(Scala.font(Font.BOLD, 20));
         nome.setForeground(Theme.ACCENTO);
         nome.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -492,7 +492,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         }
 
         JLabel info = new JLabel(riga.toString());
-        info.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        info.setFont(Scala.font(Font.PLAIN, 12));
         info.setForeground(Theme.TESTO_TENUE);
         info.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -532,7 +532,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        p.setBorder(Scala.bordo(4, 8, 4, 8));
 
         List<String> d = st.getDepositiMontati();
         if (d.isEmpty()) {
@@ -556,15 +556,15 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Theme.BORDO),
-                BorderFactory.createEmptyBorder(8, 16, 8, 16)));
+                Scala.bordo(8, 16, 8, 16)));
 
         JLabel n = new JLabel(numero);
-        n.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        n.setFont(Scala.font(Font.BOLD, 22));
         n.setForeground(Theme.ACCENTO);
         n.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel e = new JLabel(etichetta);
-        e.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        e.setFont(Scala.font(Font.PLAIN, 11));
         e.setForeground(Theme.TESTO_TENUE);
         e.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -576,12 +576,12 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
     private JPanel sezione(String titolo, JPanel corpo) {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(10, 16, 4, 16));
+        p.setBorder(Scala.bordo(10, 16, 4, 16));
 
         JLabel t = new JLabel(titolo);
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
-        t.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        t.setBorder(Scala.bordo(0, 0, 6, 0));
 
         p.add(t, BorderLayout.NORTH);
         p.add(corpo, BorderLayout.CENTER);
@@ -607,14 +607,14 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
     private JLabel testo(String s) {
         JLabel l = new JLabel("<html><body style='width:900px'>" + s + "</body></html>");
         l.setForeground(Theme.TESTO_TENUE);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setFont(Scala.font(Font.PLAIN, 12));
         return l;
     }
 
     private JLabel messaggio(String s) {
         JLabel l = new JLabel(s);
         l.setForeground(Theme.TESTO_TENUE);
-        l.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        l.setBorder(Scala.bordo(24, 24, 24, 24));
         return l;
     }
 }

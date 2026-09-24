@@ -68,15 +68,15 @@ public final class SchedaEsporta extends JPanel {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 12));
-        p.setPreferredSize(new Dimension(330, 100));
+        p.setBorder(Scala.bordo(16, 16, 16, 12));
+        p.setPreferredSize(Scala.dim(330, 100));
 
-        intestazione.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        intestazione.setFont(Scala.font(Font.BOLD, 14));
         intestazione.setForeground(Theme.TESTO);
         intestazione.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         sceltaCorvette.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sceltaCorvette.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        sceltaCorvette.setMaximumSize(Scala.dimLarga(28));
         sceltaCorvette.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -93,13 +93,13 @@ public final class SchedaEsporta extends JPanel {
         p.add(etichetta("Nome della build"));
         p.add(Box.createVerticalStrut(4));
         nomeBuild.setAlignmentX(Component.LEFT_ALIGNMENT);
-        nomeBuild.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        nomeBuild.setMaximumSize(Scala.dimLarga(28));
         p.add(nomeBuild);
         p.add(Box.createVerticalStrut(14));
         p.add(etichetta("Autore"));
         p.add(Box.createVerticalStrut(4));
         autore.setAlignmentX(Component.LEFT_ALIGNMENT);
-        autore.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        autore.setMaximumSize(Scala.dimLarga(28));
         p.add(autore);
         p.add(Box.createVerticalGlue());
 
@@ -108,7 +108,7 @@ public final class SchedaEsporta extends JPanel {
                 + "un nuovo file nella cartella <b>Builds</b>. Non serve alcun "
                 + "backup.</body></html>");
         nota.setForeground(Theme.TESTO_TENUE);
-        nota.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        nota.setFont(Scala.font(Font.PLAIN, 11));
         nota.setAlignmentX(Component.LEFT_ALIGNMENT);
         p.add(nota);
         return p;
@@ -119,22 +119,22 @@ public final class SchedaEsporta extends JPanel {
         esito.setBackground(Theme.SUPERFICIE);
         esito.setForeground(Theme.TESTO);
         esito.setFont(Theme.monospazio());
-        esito.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        esito.setBorder(Scala.bordo(10, 12, 10, 12));
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(16, 0, 0, 16));
+        p.setBorder(Scala.bordo(16, 0, 0, 16));
 
         JLabel t = new JLabel("Anteprima");
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
-        t.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        t.setBorder(Scala.bordo(0, 0, 6, 0));
 
-        anteprima.setPreferredSize(new Dimension(600, 240));
+        anteprima.setPreferredSize(Scala.dim(600, 240));
 
         JScrollPane scrollEsito = new JScrollPane(esito);
         scrollEsito.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
-        scrollEsito.setPreferredSize(new Dimension(600, 180));
+        scrollEsito.setPreferredSize(Scala.dim(600, 180));
 
         p.add(t, BorderLayout.NORTH);
         p.add(anteprima, BorderLayout.CENTER);
@@ -145,7 +145,7 @@ public final class SchedaEsporta extends JPanel {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         p.setOpaque(false);
-        p.setBorder(BorderFactory.createEmptyBorder(8, 16, 14, 16));
+        p.setBorder(Scala.bordo(8, 16, 14, 16));
 
         JButton apri = new JButton("Apri cartella Builds");
         apri.addActionListener(new ActionListener() {
@@ -155,7 +155,7 @@ public final class SchedaEsporta extends JPanel {
             }
         });
 
-        esporta.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        esporta.setFont(Scala.font(Font.BOLD, 13));
         esporta.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -171,7 +171,7 @@ public final class SchedaEsporta extends JPanel {
     private JLabel etichetta(String testo) {
         JLabel l = new JLabel(testo);
         l.setForeground(Theme.TESTO_TENUE);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setFont(Scala.font(Font.PLAIN, 12));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;
     }

@@ -346,7 +346,7 @@ public final class Icone {
         g.drawRoundRect(1, 1, 21, 21, 8, 8);
 
         String iniziali = iniziali(id);
-        g.setFont(new Font("Segoe UI", Font.BOLD, iniziali.length() > 1 ? 9 : 11));
+        g.setFont(Scala.font(Font.BOLD, iniziali.length() > 1 ? 9 : 11));
         int w = g.getFontMetrics().stringWidth(iniziali);
         g.drawString(iniziali, 12 - w / 2, 12 + g.getFontMetrics().getAscent() / 2 - 1);
         g.dispose();

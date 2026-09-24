@@ -127,6 +127,109 @@ negozio, prima di installare la tecnologia.
 
 ---
 
+## La scala dell'interfaccia (monitor 4K)
+
+Tutte le misure del programma sono in pixel: font a 12 punti, pulsanti alti 28,
+celle larghe 60. Su un monitor 4K con l'ingrandimento di Windows al 150% o al
+200% la macchina virtuale Java 8 è "consapevole del DPI": il sistema **non**
+ingrandisce la finestra, quindi Swing disegna ai pixel fisici e l'interfaccia
+riesce minuscola.
+
+`ui/Scala.java` applica un fattore unico a ogni font, misura e margine. Il
+fattore si ricava così:
+
+```
+fattore = arrotonda_al_valore_noto(DPI dello schermo / 96)
+```
+
+I valori noti sono 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 3: sono gli stessi che usa
+Windows, e servono a evitare ingrandimenti strani come 156%.
+
+**Perché `dpi/96` funziona in entrambi i casi.** Se la macchina virtuale è
+consapevole del DPI, il sistema non ingrandisce nulla e `getScreenResolution()`
+restituisce il DPI vero (192 al 200%): il fattore diventa 2 e ci pensa il
+programma. Se invece la macchina virtuale non è consapevole, è Windows a
+ingrandire l'immagine (che risulta sfocata) e `getScreenResolution()` resta 96:
+il fattore è 1 e non si somma nulla. In nessuno dei due casi
+l'ingrandimento viene applicato due volte.
+
+La scala si può forzare a mano in `CorvetteHUB.conf` con la chiave `UiScale`
+(per esempio `UiScale=1.5`). Non c'è nessun selettore nell'interfaccia: la
+finestra si ridimensiona trascinando i bordi, come qualunque altro programma.
+
+`Theme.installa()` passa il font di base dalla scala, e con lui crescono anche
+le metriche che FlatLaf calcola dai font. Le metriche che FlatLaf tiene in
+pixel (larghezza della barra di scorrimento, arrotondamenti) vengono scalate a
+parte, perché non seguono il font.
+
+---
+
+## L'eliminazione di una Corvette
+
+Una Corvette non è un oggetto isolato: è un intreccio di riferimenti. Toglierne
+uno solo lascia il salvataggio incoerente.
+
+| Dove | Cosa | Verificato sul salvataggio reale |
+|---|---|---|
+| `PersistentPlayerBases[]` | la base, con `BaseType.PersistentBaseTypes == "PlayerShipBase"` e i moduli in `Objects[]` | base #16, 1581 moduli |
+| `ShipOwnership[]` | la nave, indicata da `base.UserData` | nave #0 |
+| `ShipUsesLegacyColours[]` | un valore booleano per nave, parallelo a `ShipOwnership` | 12 voci per 12 navi |
+| `PrimaryShip` | indice della nave in uso | 6 |
+
+**Non esistono** altri riferimenti: `LastShip` e `PreviousShip` non sono campi
+di questo salvataggio (una lettura con `J()` restituisce 0 anche per un campo
+assente — attenzione, è una trappola: per sapere se un campo esiste davvero
+bisogna scorrere `names()`). `CurrentShip` è un oggetto `{Filename, Seed,
+ProceduralTexture, AltId}`, cioè la definizione del modello, **non** un indice.
+
+`domain/EliminazioneCorvette.java` fa, in quest'ordine:
+
+1. riversa i moduli `^B_` nel deposito della Stazione;
+2. rimuove la base da `PersistentPlayerBases`;
+3. rimuove la nave da `ShipOwnership`;
+4. rimuove il valore parallelo da `ShipUsesLegacyColours`;
+5. **rimappa** `PrimaryShip` se era oltre la nave rimossa;
+6. **rimappa** `UserData` delle altre basi `PlayerShipBase`.
+
+Poi verifica: nessuna Corvette collegata a una nave inesistente, `PrimaryShip`
+dentro l'elenco, colori lunghi quanto le navi, nessuna cella doppia nel
+deposito. Se una sola di queste non torna, lancia un'eccezione e lo scrittore
+rimette a posto il backup.
+
+### Riversare i moduli nel deposito
+
+Nel deposito i moduli sono impilati: una voce per tipo, fino a `MaxAmount`
+(500). Il riversamento riempie prima le voci che esistono già e poi occupa le
+celle libere, nell'ordine di `ValidSlotIndices`, così il deposito resta
+ordinato come lo scrive il gioco.
+
+**La capienza non si allarga.** Il deposito è 10 × 16 = 160 celle, e questa è
+la capienza che il gioco dà. Se i moduli non ci stanno, il tool si ferma e dice
+quante celle liberare. Una voce nuova si costruisce con `new eY()`, che è
+pubblico, e ha la stessa forma di quelle del gioco:
+
+```
+Type {InventoryType}, Id, Amount, MaxAmount, DamageFactor,
+FullyInstalled, AddedAutomatically, Index {X, Y}
+```
+
+### Le decorazioni
+
+Il deposito della Stazione accetta **solo** identificativi `^B_`. Sul
+salvataggio di prova la Corvette aveva anche 1464 pezzi di decorazione
+(1421 `^WALLLIGHTRED`, più corridoi, porte e simili): non sono moduli da
+Corvette e spariscono con la base, come quando si elimina una base nel gioco.
+Il piano li conta e li dichiara prima di procedere.
+
+### Perché la Corvette in uso è bloccata
+
+Se `PrimaryShip` punta alla nave della Corvette, il gioco tiene quella nave in
+memoria e riscrive il salvataggio al momento del salvataggio successivo: la
+modifica andrebbe persa, o peggio il salvataggio resterebbe incoerente. Il tool
+non lo permette.
+
+---
+
 ## Fatti verificati sul campo
 
 Ognuno è stato misurato su un salvataggio reale, non dedotto dal codice.

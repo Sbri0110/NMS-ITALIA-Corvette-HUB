@@ -50,14 +50,24 @@ import java.util.List;
  */
 public final class GrigliaModuli extends JPanel {
 
-    /** Il lato di una casella, in pixel. Dieci caselle stanno in 640 pixel. */
-    public static final int LATO = 60;
+    /**
+     * Il lato di una casella, in pixel. Dieci caselle stanno in 600 pixel.
+     * E' un metodo e non una costante perche' deve seguire la scala dello
+     * schermo: su un monitor 4K la casella e' grande il doppio.
+     */
+    public static int lato() {
+        return Scala.px(60);
+    }
 
     /** Il lato dell'icona dentro la casella. */
-    public static final int ICONA = 38;
+    public static int icona() {
+        return Scala.px(38);
+    }
 
     /** Il lato dell'icona che segue il puntatore mentre si trascina. */
-    private static final int FANTASMA = 56;
+    private static int fantasma() {
+        return Scala.px(56);
+    }
 
     /** Avvisato quando l'utente trascina un oggetto da una cella a un'altra. */
     public interface AscoltatoreSpostamento {
@@ -162,9 +172,9 @@ public final class GrigliaModuli extends JPanel {
             fantasma.setBackground(new Color(0, 0, 0, 0));
             Fantasma f = new Fantasma(c.icona,
                     Icone.coloreCategoria(CatalogoParti.categoria(c.id)));
-            f.setSize(FANTASMA, FANTASMA);
+            f.setSize(fantasma(), fantasma());
             fantasma.getContentPane().add(f);
-            fantasma.setSize(FANTASMA, FANTASMA);
+            fantasma.setSize(fantasma(), fantasma());
             fantasma.setAlwaysOnTop(true);
             fantasma.setVisible(true);
         } catch (Throwable t) {
@@ -181,7 +191,7 @@ public final class GrigliaModuli extends JPanel {
         try {
             java.awt.Point schermo = new java.awt.Point(puntoSullaGriglia);
             SwingUtilities.convertPointToScreen(schermo, this);
-            fantasma.setLocation(schermo.x - FANTASMA / 2, schermo.y - FANTASMA / 2);
+            fantasma.setLocation(schermo.x - fantasma() / 2, schermo.y - fantasma() / 2);
         } catch (Throwable t) {
             // se non si puo' spostare, si nasconde
             nascondiFantasma();
@@ -366,13 +376,13 @@ public final class GrigliaModuli extends JPanel {
             this.utilizzabile = !modificabile || layout.valida(x, y);
 
             setOpaque(false);
-            setPreferredSize(new Dimension(LATO, LATO));
-            setMinimumSize(new Dimension(LATO, LATO));
+            setPreferredSize(Scala.dim(lato(), lato()));
+            setMinimumSize(Scala.dim(lato(), lato()));
 
             // L'icona e la quantita' NON sono etichette figlie: si disegnano
             // direttamente. Un'etichetta figlia starebbe sopra la casella e
             // intercetterebbe il clic, che invece deve arrivare alla casella.
-            this.icona = id == null ? null : Icone.per(id, tipo, ICONA);
+            this.icona = id == null ? null : Icone.per(id, tipo, icona());
             this.mostraQuantita = !"Technology".equalsIgnoreCase(tipo);
 
             if (id != null) {
@@ -506,15 +516,15 @@ public final class GrigliaModuli extends JPanel {
 
             // l'icona del gioco, centrata
             if (icona != null) {
-                icona.paintIcon(this, g2, (getWidth() - ICONA) / 2,
-                        (getHeight() - ICONA) / 2 - 3);
+                icona.paintIcon(this, g2, (getWidth() - icona()) / 2,
+                        (getHeight() - icona()) / 2 - 3);
             }
 
             // la quantita', in basso a destra su una fascia scura: solo per gli
             // oggetti, non per le tecnologie installate
             if (mostraQuantita) {
                 String q = "x" + quantita;
-                g2.setFont(new Font("Segoe UI", Font.BOLD, 10));
+                g2.setFont(Scala.font(Font.BOLD, 10));
                 java.awt.FontMetrics fm = g2.getFontMetrics();
                 int lq = fm.stringWidth(q);
                 int xq = w - lq - 4;
