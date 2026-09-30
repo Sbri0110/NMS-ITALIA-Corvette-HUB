@@ -219,6 +219,16 @@ Niente è stato preso per buono senza controllo: ogni affermazione sul formato
 dei salvataggi ha accanto il comando o il file che la dimostra, e le funzioni
 che scrivono sono state provate su copie prima di arrivare ai salvataggi veri.
 
+## La traduzione italiana dei dati di gioco
+
+I nomi italiani delle cose di No Man's Sky — oggetti, risorse, tecnologie — **non si
+traducono a mano**: si prendono dalla **traduzione ufficiale del gioco**, estratta dai
+suoi file di localizzazione e tenuta in `NMS ITALIA - BOT/traduzione/` (84.324 voci, con
+italiano e inglese, più il catalogo di gioco tradotto).
+
+Serve a questo progetto ovunque debba mostrare il nome di qualcosa **come lo dice il
+gioco** invece che come lo direbbe chiunque altro.
+
 ---
 
 <div align="center">
