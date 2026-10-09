@@ -18,7 +18,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,8 +48,20 @@ public final class SchermataCorvette extends JPanel {
     private final Ascoltatore ascoltatore;
 
     private final JLabel contesto = new JLabel();
-    private final JLabel statoGioco = new JLabel();
-    private final JLabel messaggio = new JLabel("Pronto.");
+    private final JLabel statoGioco = new JLabel() {
+        @Override public java.awt.Dimension getPreferredSize() {
+            java.awt.Dimension d=super.getPreferredSize();
+            if(getParent()!=null && getParent().getWidth()>0) {
+                java.awt.Insets in=getParent().getInsets();
+                int disponibile=getParent().getWidth()-in.left-in.right;
+                d.width=Math.min(d.width,Math.max(0,disponibile/2));
+            }
+            return d;
+        }
+    };
+    private final JLabel messaggio = new JLabel("Pronto.") {
+        @Override public String getToolTipText() { return getText(); }
+    };
     private final JTabbedPane schede = new JTabbedPane();
 
     private final SchedaCorvette schedaCorvette;
@@ -65,6 +76,11 @@ public final class SchermataCorvette extends JPanel {
     private SaveLocator.Rilevamento rilevamentoCorrente;
     private JButton salvaModifiche;
     private JButton annullaModifiche;
+    private JButton ripristina, cambia, azioniCompatte;
+    private final JLabel titoloHangar = new JLabel("Il tuo hangar");
+    private JPanel testata, pannelloContesto, barraComandi;
+    private String contestoCompleto = "";
+    private int modoComandi = -1;
     private SchedaModificabile schedaAttiva;
     private int generazione;
     private boolean occupata;
@@ -103,7 +119,8 @@ public final class SchermataCorvette extends JPanel {
             }
         });
 
-        add(costruisciTestata(), BorderLayout.NORTH);
+        testata=costruisciTestata();
+        add(testata, BorderLayout.NORTH);
         add(costruisciSchede(), BorderLayout.CENTER);
         add(costruisciBarraStato(), BorderLayout.SOUTH);
 
@@ -118,6 +135,7 @@ public final class SchermataCorvette extends JPanel {
         p.setBorder(Scala.bordo(12, 16, 12, 16));
 
         JPanel sinistra = new JPanel();
+        pannelloContesto = sinistra;
         sinistra.setOpaque(false);
         sinistra.setLayout(new BoxLayout(sinistra, BoxLayout.X_AXIS));
 
@@ -133,7 +151,7 @@ public final class SchermataCorvette extends JPanel {
         testi.setOpaque(false);
         testi.setLayout(new BoxLayout(testi, BoxLayout.Y_AXIS));
 
-        JLabel titolo = new JLabel("Il tuo hangar");
+        JLabel titolo = titoloHangar;
         titolo.setFont(Theme.titolo());
         titolo.setForeground(Theme.TESTO);
         titolo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -180,7 +198,7 @@ public final class SchermataCorvette extends JPanel {
             }
         });
 
-        JButton ripristina = new JButton("Ripristina backup...");
+        ripristina = new JButton("Ripristina backup...");
         ripristina.setToolTipText("Rimette a posto i file di un salvataggio "
                 + "da una copia di sicurezza");
         ripristina.addActionListener(new ActionListener() {
@@ -190,7 +208,7 @@ public final class SchermataCorvette extends JPanel {
             }
         });
 
-        JButton cambia = new JButton("Cambia salvataggio");
+        cambia = new JButton("Cambia salvataggio");
         cambia.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -198,18 +216,26 @@ public final class SchermataCorvette extends JPanel {
             }
         });
 
-        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel destra = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
+        barraComandi=destra;
         destra.setOpaque(false);
         destra.add(salvaModifiche);
         destra.add(annullaModifiche);
         destra.add(ripristina);
         destra.add(cambia);
+        azioniCompatte=new JButton("Azioni...");
+        final javax.swing.JPopupMenu menu=new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem ripristino=new javax.swing.JMenuItem("Ripristina backup...");
+        ripristino.addActionListener(e -> ripristina.doClick());menu.add(ripristino);
+        javax.swing.JMenuItem cambio=new javax.swing.JMenuItem("Cambia salvataggio");
+        cambio.addActionListener(e -> cambia.doClick());menu.add(cambio);
+        azioniCompatte.addActionListener(e -> menu.show(azioniCompatte,0,azioniCompatte.getHeight()));
+        azioniCompatte.setVisible(false);destra.add(azioniCompatte);
 
         p.setBackground(Theme.SFONDO);
-        p.setBorder(Scala.bordo(22, 24, 14, 24));
+        p.setBorder(Scala.bordo(12, 16, 8, 16));
         p.add(sinistra, BorderLayout.NORTH);
-        destra.setBorder(Scala.bordo(14, 0, 0, 0));
-        ((FlowLayout) destra.getLayout()).setAlignment(FlowLayout.LEFT);
+        destra.setBorder(Scala.bordo(8, 0, 0, 0));
         p.add(destra, BorderLayout.CENTER);
         return p;
     }
@@ -233,6 +259,7 @@ public final class SchermataCorvette extends JPanel {
                         boolean ha = schedaAttiva != null && schedaAttiva.haModifiche();
                         salvaModifiche.setEnabled(ha && !occupata);
                         annullaModifiche.setEnabled(ha && !occupata);
+                        adattaComandi();
                     }
                 }
             });
@@ -240,13 +267,14 @@ public final class SchermataCorvette extends JPanel {
         boolean ha = schedaAttiva != null && schedaAttiva.haModifiche();
         salvaModifiche.setEnabled(ha && !occupata);
         annullaModifiche.setEnabled(ha && !occupata);
+        adattaComandi();
     }
 
     private JTabbedPane costruisciSchede() {
         schede.setTabPlacement(JTabbedPane.LEFT);
         schede.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         schede.putClientProperty("JTabbedPane.tabWidthMode", "equal");
-        schede.putClientProperty("JTabbedPane.minimumTabWidth", Scala.px(166));
+        schede.putClientProperty("JTabbedPane.minimumTabWidth", Scala.px(126));
         schede.setBackground(Theme.SFONDO);
         schede.setForeground(Theme.TESTO);
         schede.setFont(Scala.font(Font.PLAIN, 13));
@@ -308,20 +336,17 @@ public final class SchermataCorvette extends JPanel {
     }
 
     private JPanel costruisciBarraStato() {
-        JPanel p = new JPanel(new BorderLayout());
+        JPanel p = new JPanel(new BorderLayout(Scala.px(8),0));
         p.setBackground(Theme.SUPERFICIE);
         p.setBorder(Scala.bordo(6, 16, 6, 16));
 
         messaggio.setForeground(Theme.TESTO_TENUE);
         messaggio.setFont(Scala.font(Font.PLAIN, 12));
+        messaggio.setToolTipText("Pronto.");
         statoGioco.setFont(Scala.font(Font.PLAIN, 12));
-
-        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        destra.setOpaque(false);
-        destra.add(statoGioco);
-
-        p.add(messaggio, BorderLayout.WEST);
-        p.add(destra, BorderLayout.EAST);
+        statoGioco.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        p.add(messaggio, BorderLayout.CENTER);
+        p.add(statoGioco, BorderLayout.EAST);
         return p;
     }
 
@@ -336,6 +361,7 @@ public final class SchermataCorvette extends JPanel {
         contesto.setText("Slot " + slot.getNumero() + "   ·   " + slot.getModalita()
                 + "   ·   " + r.tipo
                 + "   ·   " + slot.getDataFormattata());
+        contestoCompleto=contesto.getText();adattaComandi();
         messaggio.setText("Converto il salvataggio dello slot " + slot.getNumero() + "...");
 
         new SwingWorker<LettoreCorvette.Esito, Void>() {
@@ -520,7 +546,7 @@ public final class SchermataCorvette extends JPanel {
                     statoGioco.setForeground(Theme.AVVISO);
                 } else {
                     statoGioco.setText("●  Gioco chiuso · pronto a lavorare");
-                    statoGioco.setToolTipText(null);
+                    statoGioco.setToolTipText("Gioco chiuso · pronto a lavorare");
                     statoGioco.setForeground(Theme.OK);
                 }
             }
@@ -596,5 +622,37 @@ public final class SchermataCorvette extends JPanel {
 
     public SaveSlotInfo getSlot() {
         return slot;
+    }
+
+    @Override public void doLayout() {
+        int placement=getWidth()<Scala.px(900)?JTabbedPane.TOP:JTabbedPane.LEFT;
+        if(schede.getTabPlacement()!=placement) schede.setTabPlacement(placement);
+        adattaComandi();
+        super.doLayout();
+    }
+    private void adattaComandi() {
+        if(azioniCompatte==null || testata==null) return;
+        boolean compatto=getWidth()>0 && getWidth()<Scala.px(760);
+        boolean modifiche=schedaAttiva!=null && schedaAttiva.haModifiche();
+        salvaModifiche.setVisible(!compatto || modifiche);
+        annullaModifiche.setVisible(!compatto || modifiche);
+        ripristina.setVisible(!compatto);cambia.setVisible(!compatto);
+        azioniCompatte.setVisible(compatto);titoloHangar.setVisible(!compatto);
+        int modo=compatto?(modifiche?2:1):0;
+        if(modoComandi!=modo) {
+            modoComandi=modo;
+            salvaModifiche.setText(compatto?"Salva":"Salva le modifiche");
+            testata.setBorder(compatto?Scala.bordo(6,12,6,12):Scala.bordo(12,16,8,16));
+            barraComandi.setBorder(Scala.bordo(compatto?(modifiche?4:0):8,0,0,0));
+            testata.removeAll();
+            testata.setLayout(new BorderLayout(Scala.px(12),0));
+            testata.add(pannelloContesto,modo==1?BorderLayout.CENTER:BorderLayout.NORTH);
+            testata.add(barraComandi,modo==1?BorderLayout.EAST:BorderLayout.CENTER);
+        }
+        if(slot!=null) {
+            String testo=compatto?"Slot "+slot.getNumero()+" · "+slot.getModalita()+" · "+rilevamentoCorrente.tipo:contestoCompleto;
+            if(!testo.equals(contesto.getText())) contesto.setText(testo);
+            contesto.setToolTipText(contestoCompleto);
+        }
     }
 }

@@ -4,24 +4,23 @@ import it.nmsitalia.corvettehub.domain.CatalogoParti;
 import it.nmsitalia.corvettehub.domain.LayoutInventario;
 import it.nmsitalia.corvettehub.domain.LettoreInventari;
 
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Window;
 import javax.swing.JWindow;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -34,8 +33,9 @@ import java.util.List;
  * Perche' non un FlowLayout: FlowLayout va a capo in base alla larghezza del
  * contenitore, ma dentro uno JScrollPane la larghezza disponibile non arriva al
  * layout, che quindi dispone tutto su una riga sola e i riquadri escono fuori
- * dalla vista. Qui si usa una griglia a NUMERO FISSO DI COLONNE, che e' anche
- * quello che fa il gioco.
+ * dalla vista. Il numero di colonne rimane quello del salvataggio. Il lato
+ * delle celle si adatta alla larghezza disponibile senza cambiare le
+ * coordinate degli oggetti; ogni casella rimane quadrata.
  *
  * Le caselle vuote si disegnano: sono gli slot liberi, e nel gioco si vedono.
  *
@@ -44,29 +44,36 @@ import java.util.List;
  * Il trascinamento NON usa il meccanismo di Swing (TransferHandler): le caselle
  * contengono delle etichette che intercettano gli eventi del mouse, e il
  * rilascio non arrivava mai a destinazione. La griglia invece riceve tutti gli
- * eventi e calcola da sola in quale casella si trova il puntatore, dividendo
- * la larghezza per il numero di colonne: cosi' funziona anche nei pochi pixel
- * di spazio fra una casella e l'altra.
+ * eventi e cerca la casella nei suoi bounds effettivi. Gli spazi fra le
+ * caselle e lo spazio libero attorno alla griglia non sono destinazioni.
  */
 public final class GrigliaModuli extends JPanel {
 
     /**
-     * Il lato di una casella, in pixel. Dieci caselle stanno in 600 pixel.
+     * Il lato massimo di una casella, in pixel gia' scalati.
      * E' un metodo e non una costante perche' deve seguire la scala dello
      * schermo: su un monitor 4K la casella e' grande il doppio.
      */
     public static int lato() {
-        return Scala.px(60);
+        return Scala.px(44);
     }
 
     /** Il lato dell'icona dentro la casella. */
     public static int icona() {
-        return Scala.px(38);
+        return Scala.px(28);
     }
 
     /** Il lato dell'icona che segue il puntatore mentre si trascina. */
     private static int fantasma() {
-        return Scala.px(56);
+        return Scala.px(40);
+    }
+
+    private static int minimo() {
+        return Math.max(1, Scala.px(28));
+    }
+
+    private static int spazio() {
+        return Math.max(1, Scala.px(3));
     }
 
     /** Avvisato quando l'utente trascina un oggetto da una cella a un'altra. */
@@ -98,8 +105,7 @@ public final class GrigliaModuli extends JPanel {
 
         this.colonne = colonne;
         this.righe = righeEffettive;
-        setOpaque(false);
-        setLayout(new GridLayout(righeEffettive, colonne, Scala.px(5), Scala.px(5)));
+        preparaLayout();
 
         for (int i = 0; i < righeEffettive * colonne; i++) {
             Cella c = i < voci.size() ? new Cella(voci.get(i)) : new Cella();
@@ -120,8 +126,7 @@ public final class GrigliaModuli extends JPanel {
         this.layout = layout;
         this.ascoltatore = ascoltatore;
 
-        setOpaque(false);
-        setLayout(new GridLayout(righe, colonne, Scala.px(5), Scala.px(5)));
+        preparaLayout();
 
         for (int y = 0; y < righe; y++) {
             for (int x = 0; x < colonne; x++) {
@@ -129,6 +134,80 @@ public final class GrigliaModuli extends JPanel {
                 celle.add(c);
                 add(c);
             }
+        }
+    }
+
+    private void preparaLayout() {
+        setOpaque(false);
+        setLayout(null);
+        setAlignmentX(LEFT_ALIGNMENT);
+        addComponentListener(new ComponentAdapter() {
+            private int ultimaLarghezza = -1;
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                if (getWidth() == ultimaLarghezza) return;
+                ultimaLarghezza = getWidth();
+                // La larghezza nuova puo' cambiare il preferred height. Il
+                // padre ricalcola cosi' anche lo spazio verticale e lo scroll.
+                revalidate();
+                if (getParent() != null) getParent().revalidate();
+            }
+        });
+    }
+
+    /** Misura naturale compatta; l'altezza segue il lato assegnato alle celle. */
+    @Override
+    public Dimension getPreferredSize() {
+        Insets bordi = getInsets();
+        int naturale = colonne * lato() + Math.max(0, colonne - 1) * spazio();
+        int disponibile = naturale;
+        java.awt.Container padre = getParent();
+        if (padre != null && padre.getWidth() > 0) {
+            Insets margini = padre.getInsets();
+            disponibile = padre.getWidth() - margini.left - margini.right;
+            if (padre.getLayout() instanceof FlowLayout) {
+                disponibile -= 2 * ((FlowLayout) padre.getLayout()).getHgap();
+            }
+            disponibile -= bordi.left + bordi.right;
+        } else if (getWidth() > 0) {
+            disponibile = getWidth() - bordi.left - bordi.right;
+        }
+        return dimensione(latoPer(disponibile));
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return dimensione(minimo());
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+    }
+
+    private Dimension dimensione(int cella) {
+        Insets bordi = getInsets();
+        return new Dimension(bordi.left + bordi.right
+                + colonne * cella + Math.max(0, colonne - 1) * spazio(),
+                bordi.top + bordi.bottom
+                + righe * cella + Math.max(0, righe - 1) * spazio());
+    }
+
+    private int latoPer(int disponibile) {
+        int spazioCelle = disponibile - Math.max(0, colonne - 1) * spazio();
+        return Math.max(minimo(), Math.min(lato(), spazioCelle / Math.max(1, colonne)));
+    }
+
+    /** GridLayout dilaterebbe i riquadri in rettangoli. Qui rimangono quadrati. */
+    @Override
+    public void doLayout() {
+        Insets bordi = getInsets();
+        int cella = latoPer(getWidth() - bordi.left - bordi.right);
+        for (int i = 0; i < celle.size(); i++) {
+            Cella c = celle.get(i);
+            c.setBounds(bordi.left + (i % colonne) * (cella + spazio()),
+                    bordi.top + (i / colonne) * (cella + spazio()), cella, cella);
         }
     }
 
@@ -229,6 +308,7 @@ public final class GrigliaModuli extends JPanel {
 
     /** Il trascinamento, con la posizione riportata alle coordinate della griglia. */
     void trascinatoA(java.awt.Point p) {
+        if (!isEnabled()) { pulisci(); return; }
         if (origine == null || p == null) {
             return;
         }
@@ -282,35 +362,21 @@ public final class GrigliaModuli extends JPanel {
     /**
      * La casella sotto il puntatore.
      *
-     * Si calcola dividendo lo spazio disponibile, non con getComponentAt:
-     * cosi' funziona anche nei quattro pixel di spazio fra una casella e
-     * l'altra, dove altrimenti non si aggancerebbe niente.
+     * I bounds sono quelli assegnati dal layout: niente arrotondamenti delle
+     * coordinate verso una casella vicina, nemmeno sui bordi o nei gap.
      */
     private Cella cellaA(int px, int py) {
         if (getWidth() <= 0 || getHeight() <= 0 || colonne <= 0 || righe <= 0) {
             return null;
         }
-        // fuori dalla griglia non si lascia niente: se il mouse esce mentre si
-        // trascina, l'oggetto deve restare dov'e'
-        if (px < -8 || py < -8 || px > getWidth() + 8 || py > getHeight() + 8) {
+        if (px < 0 || py < 0 || px >= getWidth() || py >= getHeight()) {
             return null;
         }
-        int x = px * colonne / getWidth();
-        int y = py * righe / getHeight();
-        if (x < 0) {
-            x = 0;
+        for (int i = 0; i < celle.size(); i++) {
+            Cella c = celle.get(i);
+            if (c.getBounds().contains(px, py)) return c;
         }
-        if (y < 0) {
-            y = 0;
-        }
-        if (x >= colonne) {
-            x = colonne - 1;
-        }
-        if (y >= righe) {
-            y = righe - 1;
-        }
-        int i = y * colonne + x;
-        return i >= 0 && i < celle.size() ? celle.get(i) : null;
+        return null;
     }
 
     // ------------------------------------------------------------- casella
@@ -378,8 +444,8 @@ public final class GrigliaModuli extends JPanel {
             this.utilizzabile = !modificabile || layout.valida(x, y);
 
             setOpaque(false);
-            setPreferredSize(Scala.dim(lato(), lato()));
-            setMinimumSize(Scala.dim(lato(), lato()));
+            setPreferredSize(new Dimension(lato(), lato()));
+            setMinimumSize(new Dimension(minimo(), minimo()));
 
             // L'icona e la quantita' NON sono etichette figlie: si disegnano
             // direttamente. Un'etichetta figlia starebbe sopra la casella e
@@ -407,14 +473,15 @@ public final class GrigliaModuli extends JPanel {
                 addMouseListener(new MouseAdapter() {
                     @Override
                     public void mousePressed(MouseEvent e) {
-                        if (griglia != null) {
+                        if (griglia != null && SwingUtilities.isLeftMouseButton(e)) {
                             griglia.premutoSu(Cella.this);
+                            griglia.muoviFantasma(versoGriglia(e));
                         }
                     }
 
                     @Override
                     public void mouseReleased(MouseEvent e) {
-                        if (griglia != null) {
+                        if (griglia != null && SwingUtilities.isLeftMouseButton(e)) {
                             griglia.rilasciatoA(versoGriglia(e));
                         }
                     }
@@ -472,69 +539,98 @@ public final class GrigliaModuli extends JPanel {
 
         @Override
         protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            int w = getWidth() - 1;
-            int h = getHeight() - 1;
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth() - 1;
+                int h = getHeight() - 1;
+                if (w <= 0 || h <= 0) return;
+                int angolo = Math.max(3, Math.min(Scala.px(6), Math.min(w, h) / 5));
 
-            if (id == null) {
-                g2.setColor(utilizzabile
-                        ? Theme.SUPERFICIE : Theme.SFONDO);
-                g2.fillRoundRect(0, 0, w, h, 8, 8);
-                if (bersaglio && utilizzabile) {
-                    // dove finirebbe l'oggetto se lo lasciassi qui
-                    g2.setColor(Theme.OK);
+                if (id == null) {
+                    g2.setColor(utilizzabile
+                            ? Theme.SUPERFICIE : Theme.SFONDO);
+                    g2.fillRoundRect(0, 0, w, h, angolo, angolo);
+                    if (bersaglio && utilizzabile) {
+                        // dove finirebbe l'oggetto se lo lasciassi qui
+                        g2.setColor(Theme.OK);
+                        g2.setStroke(new BasicStroke(2.0f));
+                    } else {
+                        g2.setColor(Theme.BORDO);
+                        g2.setStroke(new BasicStroke(0.5f));
+                    }
+                    g2.drawRoundRect(0, 0, w, h, angolo, angolo);
+                    return;
+                }
+
+                Color c = Icone.coloreCategoria(categoria);
+                if (origine) {
+                    g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 70));
+                } else if (bersaglio) {
+                    g2.setColor(Theme.AVVISO);
+                } else {
+                    g2.setColor(sopra ? Theme.SUPERFICIE_ALTA : Theme.SUPERFICIE);
+                }
+                g2.fillRoundRect(0, 0, w, h, angolo, angolo);
+
+                if (origine) {
+                    g2.setColor(c);
+                    g2.setStroke(new BasicStroke(2.0f));
+                } else if (bersaglio) {
+                    g2.setColor(Theme.AVVISO);
                     g2.setStroke(new BasicStroke(2.0f));
                 } else {
-                    g2.setColor(Theme.BORDO);
-                    g2.setStroke(new BasicStroke(0.5f));
+                    g2.setColor(sopra ? c : new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));
+                    g2.setStroke(new BasicStroke(sopra ? 1.6f : 1.0f));
                 }
-                g2.drawRoundRect(0, 0, w, h, 8, 8);
-                return;
-            }
+                g2.drawRoundRect(0, 0, w, h, angolo, angolo);
 
-            Color c = Icone.coloreCategoria(categoria);
-            if (origine) {
-                g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 70));
-            } else if (bersaglio) {
-                g2.setColor(Theme.AVVISO);
-            } else {
-                g2.setColor(sopra ? Theme.SUPERFICIE_ALTA : Theme.SUPERFICIE);
-            }
-            g2.fillRoundRect(0, 0, w, h, 8, 8);
+                // l'icona del gioco, centrata
+                if (icona != null) {
+                    int misura = Math.min(icona(), Math.max(1,
+                            Math.round(Math.min(getWidth(), getHeight()) * 28f / 44f)));
+                    Graphics2D immagine = (Graphics2D) g2.create();
+                    try {
+                        immagine.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                        immagine.translate((getWidth() - misura) / 2,
+                                (getHeight() - misura) / 2 - (mostraQuantita ? Scala.px(2) : 0));
+                        immagine.scale(misura / (double) icona.getIconWidth(),
+                                misura / (double) icona.getIconHeight());
+                        icona.paintIcon(this, immagine, 0, 0);
+                    } finally {
+                        immagine.dispose();
+                    }
+                }
 
-            if (origine) {
-                g2.setColor(c);
-                g2.setStroke(new BasicStroke(2.0f));
-            } else if (bersaglio) {
-                g2.setColor(Theme.AVVISO);
-                g2.setStroke(new BasicStroke(2.0f));
-            } else {
-                g2.setColor(sopra ? c : new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));
-                g2.setStroke(new BasicStroke(sopra ? 1.6f : 1.0f));
-            }
-            g2.drawRoundRect(0, 0, w, h, 8, 8);
-
-            // l'icona del gioco, centrata
-            if (icona != null) {
-                icona.paintIcon(this, g2, (getWidth() - icona()) / 2,
-                        (getHeight() - icona()) / 2 - 3);
-            }
-
-            // la quantita', in basso a destra su una fascia scura: solo per gli
-            // oggetti, non per le tecnologie installate
-            if (mostraQuantita) {
-                String q = "x" + quantita;
-                g2.setFont(Scala.font(Font.BOLD, 10));
-                java.awt.FontMetrics fm = g2.getFontMetrics();
-                int lq = fm.stringWidth(q);
-                int xq = w - lq - 4;
-                int yq = h - 3;
-                g2.setColor(new Color(0, 0, 0, 150));
-                g2.fillRect(xq - 3, yq - fm.getAscent(), lq + 6, fm.getHeight() - 1);
-                g2.setColor(Color.WHITE);
-                g2.drawString(q, xq, yq);
+                // la quantita', in basso a destra su una fascia scura: solo per gli
+                // oggetti, non per le tecnologie installate
+                if (mostraQuantita) {
+                    String q = "x" + quantita;
+                    int dimensione = Math.max(Scala.px(8), Math.min(Scala.px(10),
+                            Math.round(Math.min(getWidth(), getHeight()) / 4.4f)));
+                    g2.setFont(Scala.font(Font.BOLD, 10).deriveFont((float) dimensione));
+                    java.awt.FontMetrics fm = g2.getFontMetrics();
+                    int margine = Math.max(1, Scala.px(2));
+                    int disponibile = Math.max(1, w - 2 * margine);
+                    if (fm.stringWidth(q) > disponibile) {
+                        float adattato = Math.max(Scala.px(6), dimensione
+                                * disponibile / (float) fm.stringWidth(q));
+                        g2.setFont(g2.getFont().deriveFont(adattato));
+                        fm = g2.getFontMetrics();
+                    }
+                    int lq = fm.stringWidth(q);
+                    int xq = Math.max(margine, w - lq - margine);
+                    int yq = h - margine;
+                    g2.setColor(new Color(0, 0, 0, 150));
+                    g2.fillRect(xq - margine, yq - fm.getAscent(),
+                            lq + 2 * margine, fm.getHeight() - 1);
+                    g2.setColor(Color.WHITE);
+                    g2.drawString(q, xq, yq);
+                }
+            } finally {
+                g2.dispose();
             }
         }
     }

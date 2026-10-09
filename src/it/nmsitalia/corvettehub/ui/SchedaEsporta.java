@@ -9,7 +9,6 @@ import nomanssave.eY;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -17,12 +16,11 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,18 +56,19 @@ public final class SchedaEsporta extends JPanel {
         this.cartellaLibreria = cartellaLibreria;
         setBackground(Theme.SFONDO);
         setLayout(new BorderLayout());
-        add(costruisciSinistra(), BorderLayout.WEST);
-        add(costruisciCentro(), BorderLayout.CENTER);
+        JSplitPane split = new Theme.Divisione(JSplitPane.HORIZONTAL_SPLIT,
+                Theme.scorriFluido(costruisciSinistra()), costruisciCentro());
+        Theme.adattaSplit(split, 0.36, 760, true);
+        add(split, BorderLayout.CENTER);
         add(costruisciPiede(), BorderLayout.SOUTH);
         aggiorna(null, null, null);
     }
 
     private JPanel costruisciSinistra() {
-        JPanel p = new JPanel();
+        JPanel p = Theme.colonnaFluida();
         p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(16, 16, 16, 12));
-        p.setPreferredSize(Scala.dim(330, 100));
+        p.setBorder(Scala.bordo(10, 12, 10, 6));
+        p.setMinimumSize(Scala.dim(0, 0));
 
         intestazione.setFont(Scala.font(Font.BOLD, 14));
         intestazione.setForeground(Theme.TESTO);
@@ -85,28 +84,33 @@ public final class SchedaEsporta extends JPanel {
         });
 
         p.add(intestazione);
-        p.add(Box.createVerticalStrut(14));
+        p.add(Box.createVerticalStrut(Scala.px(8)));
         p.add(etichetta("Corvette da esportare"));
         p.add(Box.createVerticalStrut(4));
         p.add(sceltaCorvette);
-        p.add(Box.createVerticalStrut(16));
+        p.add(Box.createVerticalStrut(Scala.px(10)));
         p.add(etichetta("Nome della build"));
         p.add(Box.createVerticalStrut(4));
         nomeBuild.setAlignmentX(Component.LEFT_ALIGNMENT);
         nomeBuild.setMaximumSize(Scala.dimLarga(28));
         p.add(nomeBuild);
-        p.add(Box.createVerticalStrut(14));
+        p.add(Box.createVerticalStrut(Scala.px(8)));
         p.add(etichetta("Autore"));
         p.add(Box.createVerticalStrut(4));
         autore.setAlignmentX(Component.LEFT_ALIGNMENT);
         autore.setMaximumSize(Scala.dimLarga(28));
         p.add(autore);
-        p.add(Box.createVerticalGlue());
+        p.add(Box.createVerticalStrut(Scala.px(12)));
 
-        JLabel nota = new JLabel("<html><body style='width:280px'>"
-                + "L'export non tocca il salvataggio: legge la Corvette e scrive "
-                + "un nuovo file nella cartella <b>Builds</b>. Non serve alcun "
-                + "backup.</body></html>");
+        JTextArea nota = new JTextArea("L'export non tocca il salvataggio: legge la Corvette e scrive "
+                + "un nuovo file nella cartella Builds. Non serve alcun backup.");
+        nota.setEditable(false);
+        nota.setFocusable(false);
+        nota.setOpaque(false);
+        nota.setLineWrap(true);
+        nota.setWrapStyleWord(true);
+        nota.setColumns(24);
+        nota.setMinimumSize(Scala.dim(0, 0));
         nota.setForeground(Theme.TESTO_TENUE);
         nota.setFont(Scala.font(Font.PLAIN, 11));
         nota.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -123,29 +127,33 @@ public final class SchedaEsporta extends JPanel {
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(16, 0, 0, 16));
+        p.setBorder(Scala.bordo(10, 6, 0, 12));
+        p.setMinimumSize(Scala.dim(0, 0));
 
         JLabel t = new JLabel("Anteprima");
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
         t.setBorder(Scala.bordo(0, 0, 6, 0));
 
-        anteprima.setPreferredSize(Scala.dim(600, 240));
+        anteprima.setPreferredSize(Scala.dim(320, 190));
+        anteprima.setMinimumSize(Scala.dim(0, 80));
 
         JScrollPane scrollEsito = new JScrollPane(esito);
         scrollEsito.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
-        scrollEsito.setPreferredSize(Scala.dim(600, 180));
+        scrollEsito.setPreferredSize(Scala.dim(320, 110));
+        scrollEsito.setMinimumSize(Scala.dim(0, 45));
 
         p.add(t, BorderLayout.NORTH);
-        p.add(anteprima, BorderLayout.CENTER);
-        p.add(scrollEsito, BorderLayout.SOUTH);
+        JSplitPane contenuto = new Theme.Divisione(JSplitPane.VERTICAL_SPLIT, anteprima, scrollEsito);
+        Theme.adattaSplit(contenuto, 0.67, 0, false);
+        p.add(contenuto, BorderLayout.CENTER);
         return p;
     }
 
     private JPanel costruisciPiede() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel p = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(8, 16, 14, 16));
+        p.setBorder(Scala.bordo(6, 12, 8, 12));
 
         JButton apri = new JButton("Apri cartella Builds");
         apri.addActionListener(new ActionListener() {

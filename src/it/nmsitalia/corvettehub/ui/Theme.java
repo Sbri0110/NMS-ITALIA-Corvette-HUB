@@ -33,10 +33,10 @@ public final class Theme {
         UIManager.put("Component.borderColor", BORDO);
         UIManager.put("Component.focusColor", ACCENTO);
         UIManager.put("Component.focusWidth", Scala.px(1));
-        UIManager.put("Component.arc", Scala.px(12));
-        UIManager.put("Button.arc", Scala.px(12));
-        UIManager.put("TextComponent.arc", Scala.px(12));
-        UIManager.put("Button.margin", new Insets(Scala.px(10), Scala.px(18), Scala.px(10), Scala.px(18)));
+        UIManager.put("Component.arc", Scala.px(8));
+        UIManager.put("Button.arc", Scala.px(8));
+        UIManager.put("TextComponent.arc", Scala.px(8));
+        UIManager.put("Button.margin", new Insets(Scala.px(6), Scala.px(12), Scala.px(6), Scala.px(12)));
         UIManager.put("Button.background", SUPERFICIE_ALTA);
         UIManager.put("Button.foreground", TESTO);
         UIManager.put("Button.hoverBackground", BORDO);
@@ -69,15 +69,15 @@ public final class Theme {
         UIManager.put("TabbedPane.selectedBackground", SUPERFICIE_ALTA);
         UIManager.put("TabbedPane.underlineColor", ACCENTO);
         UIManager.put("TabbedPane.focusColor", ACCENTO);
-        UIManager.put("TabbedPane.tabHeight", Scala.px(48));
+        UIManager.put("TabbedPane.tabHeight", Scala.px(36));
         UIManager.put("TabbedPane.tabSelectionHeight", Scala.px(3));
         UIManager.put("TabbedPane.contentAreaColor", BORDO);
         UIManager.put("TabbedPane.contentSeparatorHeight", 0);
-        UIManager.put("TabbedPane.tabInsets", new Insets(Scala.px(8), Scala.px(20), Scala.px(8), Scala.px(20)));
+        UIManager.put("TabbedPane.tabInsets", new Insets(Scala.px(6), Scala.px(12), Scala.px(6), Scala.px(12)));
         UIManager.put("ToolTip.background", SUPERFICIE_ALTA);
         UIManager.put("ToolTip.foreground", TESTO);
     }
-    public static Font titolo() { return Scala.font(Font.BOLD, 18); }
+    public static Font titolo() { return Scala.font(Font.BOLD, 16); }
     public static Font sezione() { return Scala.font(Font.BOLD, 13); }
     public static Font monospazio() { return Scala.mono(12); }
     public static void primaria(JButton b) {
@@ -94,8 +94,11 @@ public final class Theme {
         }
         if (c instanceof JSplitPane) {
             JSplitPane s = (JSplitPane) c;
-            if (s.getLeftComponent() != null) s.getLeftComponent().setMinimumSize(Scala.dim(160, 100));
-            if (s.getRightComponent() != null) s.getRightComponent().setMinimumSize(Scala.dim(240, 100));
+            if (s.getClientProperty("divisione.fluida") != null) aggiornaDivisione(s);
+            else {
+                if (s.getLeftComponent() != null) s.getLeftComponent().setMinimumSize(new Dimension(0,0));
+                if (s.getRightComponent() != null) s.getRightComponent().setMinimumSize(new Dimension(0,0));
+            }
         }
         if (c instanceof JTextArea) {
             ((JTextArea) c).setLineWrap(true); ((JTextArea) c).setWrapStyleWord(true);
@@ -118,6 +121,90 @@ public final class Theme {
         while (c != null && !(c instanceof SchermataCorvette)) c = c.getParent();
         if (c instanceof SchermataCorvette) ((SchermataCorvette)c).setOccupata(occupata);
     }
+    /** Contenuto verticale senza larghezze fisse o allungamento delle carte. */
+    public static JPanel colonnaFluida() { return new Colonna(); }
+    public static JScrollPane scorriFluido(Component contenuto) {
+        JPanel colonna=colonnaFluida(); colonna.add(contenuto);
+        JScrollPane scroll=new JScrollPane(colonna); scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(Scala.px(24));
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        return scroll;
+    }
+    public static void adattaSplit(final JSplitPane split,double rapporto,int soglia,boolean verticaleStretto) {
+        split.putClientProperty("divisione.fluida",new DivisioneDati(rapporto,soglia,verticaleStretto,split.getOrientation()));
+        split.setContinuousLayout(true); split.setBorder(null);
+        if(split.getLeftComponent()!=null) split.getLeftComponent().setMinimumSize(new Dimension(0,0));
+        if(split.getRightComponent()!=null) split.getRightComponent().setMinimumSize(new Dimension(0,0));
+        split.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override public void componentResized(java.awt.event.ComponentEvent e) { aggiornaDivisione(split); }
+        });
+    }
+    public static void aggiornaLayout(Component c) {
+        if(c instanceof JSplitPane) aggiornaDivisione((JSplitPane)c);
+        if(c instanceof Container) for(Component child:((Container)c).getComponents()) aggiornaLayout(child);
+    }
+    private static void aggiornaDivisione(JSplitPane split) {
+        Object value=split.getClientProperty("divisione.fluida");
+        if(!(value instanceof DivisioneDati)) return;
+        DivisioneDati d=(DivisioneDati)value;
+        int orientamento=d.verticale && split.getWidth()>0 && split.getWidth()<Scala.px(d.soglia)
+                ? JSplitPane.VERTICAL_SPLIT : d.orientamento;
+        int extent=orientamento==JSplitPane.HORIZONTAL_SPLIT?split.getWidth():split.getHeight();
+        if(extent<=0) return;
+        if(d.extent==extent && split.getOrientation()==orientamento) return;
+        if(d.extent>0 && d.orientamentoAttuale==split.getOrientation() && split.getDividerLocation()>0) {
+            d.rapporto=Math.max(0.15,Math.min(0.85,(double)split.getDividerLocation()/Math.max(1,d.extent-split.getDividerSize())));
+        }
+        if(split.getOrientation()!=orientamento) split.setOrientation(orientamento);
+        d.extent=extent;d.orientamentoAttuale=orientamento;
+        split.setResizeWeight(d.rapporto);
+        split.setDividerLocation((int)Math.round(Math.max(0,extent-split.getDividerSize())*d.rapporto));
+    }
+    private static final class DivisioneDati {
+        double rapporto;final int soglia,orientamento;final boolean verticale;
+        int extent,orientamentoAttuale;
+        DivisioneDati(double r,int s,boolean v,int o) { rapporto=Math.max(0.15,Math.min(.85,r));soglia=s;verticale=v;orientamento=o;orientamentoAttuale=o; }
+    }
+    public static final class Divisione extends JSplitPane {
+        public Divisione(int orientation,Component a,Component b) { super(orientation,a,b); }
+        @Override public void doLayout() { aggiornaDivisione(this); super.doLayout(); }
+    }
+    private static final class Colonna extends JPanel implements Scrollable {
+        Colonna() { setOpaque(false);setLayout(new Verticale()); }
+        public Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+        public int getScrollableUnitIncrement(Rectangle r,int orientation,int direction) { return Scala.px(24); }
+        public int getScrollableBlockIncrement(Rectangle r,int orientation,int direction) { return Math.max(Scala.px(24),r.height-Scala.px(24)); }
+        public boolean getScrollableTracksViewportWidth() { return true; }
+        public boolean getScrollableTracksViewportHeight() { return false; }
+    }
+    private static final class Verticale implements LayoutManager {
+        public void addLayoutComponent(String n,Component c) { }
+        public void removeLayoutComponent(Component c) { }
+        public Dimension minimumLayoutSize(Container c) { return new Dimension(0,0); }
+        public Dimension preferredLayoutSize(Container c) { return misura(c,false); }
+        public void layoutContainer(Container c) { misura(c,true); }
+        private Dimension misura(Container c,boolean layout) {
+            Insets in=c.getInsets();int w=c.getWidth();
+            if(c.getParent() instanceof JViewport) w=c.getParent().getWidth();
+            else if(c.getParent()!=null && c.getParent().getLayout() instanceof BorderLayout) {
+                BorderLayout layoutParent=(BorderLayout)c.getParent().getLayout();
+                Object position=layoutParent.getConstraints(c);
+                if(BorderLayout.NORTH.equals(position)||BorderLayout.SOUTH.equals(position)||BorderLayout.CENTER.equals(position)) {
+                    Insets parentInsets=c.getParent().getInsets();
+                    w=c.getParent().getWidth()-parentInsets.left-parentInsets.right;
+                }
+            }
+            if(w<=0) w=Scala.px(600);
+            int available=Math.max(1,w-in.left-in.right),y=in.top;
+            for(Component child:c.getComponents()) if(child.isVisible()) {
+                if(child.getWidth()!=available) { child.setSize(available,child.getHeight());child.invalidate(); }
+                int h=child.getPreferredSize().height;
+                if(layout) child.setBounds(in.left,y,available,h);
+                y+=h;
+            }
+            return new Dimension(w,y+in.bottom);
+        }
+    }
     public static final class BordoArrotondato extends AbstractBorder {
         @Override public Insets getBorderInsets(Component c) { return new Insets(1,1,1,1); }
         @Override public Insets getBorderInsets(Component c, Insets i) { i.set(1,1,1,1); return i; }
@@ -132,8 +219,8 @@ public final class Theme {
         @Override protected void paintComponent(Graphics g) {
             Graphics2D p=(Graphics2D)g.create();
             p.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-            p.setColor(SUPERFICIE);p.fillRoundRect(0,0,getWidth()-1,getHeight()-1,Scala.px(16),Scala.px(16));
-            p.setColor(BORDO);p.drawRoundRect(0,0,getWidth()-1,getHeight()-1,Scala.px(16),Scala.px(16));p.dispose();
+            p.setColor(SUPERFICIE);p.fillRoundRect(0,0,getWidth()-1,getHeight()-1,Scala.px(10),Scala.px(10));
+            p.setColor(BORDO);p.drawRoundRect(0,0,getWidth()-1,getHeight()-1,Scala.px(10),Scala.px(10));p.dispose();
         }
     }
 }

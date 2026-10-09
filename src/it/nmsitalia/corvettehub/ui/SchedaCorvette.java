@@ -46,7 +46,7 @@ import java.util.List;
 public final class SchedaCorvette extends JPanel implements SchedaModificabile {
 
     private final JComboBox<String> sceltaCorvette = new JComboBox<String>();
-    private final JPanel contenuto = new JPanel();
+    private final JPanel contenuto = Theme.colonnaFluida();
     private SchedaModificabile.AscoltatoreModifiche ascoltatoreModifiche;
 
     private SaveLocator.Rilevamento rilevamento;
@@ -103,12 +103,12 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         setBackground(Theme.SFONDO);
         setLayout(new BorderLayout());
 
-        JPanel testata = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        JPanel testata = new JPanel(new LayoutFluido(Scala.px(6),Scala.px(4)));
         testata.setOpaque(false);
         testata.setBorder(Scala.bordo(4, 8, 0, 8));
         JLabel l = new JLabel("Corvette:");
         l.setForeground(Theme.TESTO_TENUE);
-        sceltaCorvette.setPreferredSize(Scala.dim(320, 28));
+        sceltaCorvette.setPreferredSize(Scala.dim(260, 28));
         sceltaCorvette.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -136,7 +136,6 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         testata.add(sceltaCorvette);
 
         contenuto.setBackground(Theme.SFONDO);
-        contenuto.setLayout(new BoxLayout(contenuto, BoxLayout.Y_AXIS));
 
         JScrollPane scroll = new JScrollPane(contenuto);
         scroll.setBorder(null);
@@ -262,9 +261,8 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
      * altre scritture.
      */
     private JPanel pannelloModificabile(Corvette c, String campo, boolean tecnologia) {
-        JPanel p = new JPanel();
+        JPanel p = Theme.colonnaFluida();
         p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 
         nomanssave.eY inv = inventarioDi(c, campo);
         if (inv == null) {
@@ -290,7 +288,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         // 700 pixel e una fascia messa sotto finirebbe fuori dalla vista
         p.add(fascia(lay, tecnologia));
 
-        JPanel riga = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel riga = new JPanel(new BorderLayout());
         riga.setOpaque(false);
         riga.setAlignmentX(Component.LEFT_ALIGNMENT);
         riga.add(new GrigliaModuli(lay, new GrigliaModuli.AscoltatoreSpostamento() {
@@ -300,18 +298,19 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
                     mostra();
                 }
             }
-        }));
+        }),BorderLayout.NORTH);
         p.add(riga);
         return p;
     }
 
     /** La fascia che dice se ci sono spostamenti da salvare. */
     private JPanel fascia(LayoutInventario lay, boolean tecnologia) {
-        JPanel b = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        JPanel b = new JPanel(new BorderLayout());
         b.setOpaque(true);
         b.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel scritta = new JLabel();
+        javax.swing.JTextArea scritta = new javax.swing.JTextArea();
+        scritta.setEditable(false);scritta.setOpaque(false);scritta.setLineWrap(true);scritta.setWrapStyleWord(true);scritta.setRows(1);
         if (lay.modificato()) {
             int n = lay.quantiSpostati();
             b.setBackground(Theme.AVVISO_SCURO);
@@ -325,11 +324,11 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         } else {
             b.setBackground(Theme.SFONDO);
             b.setBorder(Scala.bordo(6, 0, 6, 0));
-            scritta.setText("Trascina un oggetto per spostarlo   ·   "
+            scritta.setText("Trascina per spostare   ·   "
                     + lay.getNumeroPezzi() + " su "
                     + (lay.getLarghezza() * lay.getAltezza()) + " celle"
                     + (tecnologia
-                    ? "   ·   spostare le tecnologie cambia i bonus di adiacenza" : ""));
+                    ? "   ·   i bonus di adiacenza possono cambiare" : ""));
             scritta.setForeground(Theme.TESTO_TENUE);
             scritta.setFont(Scala.font(Font.PLAIN, 12));
         }
@@ -503,7 +502,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         p.setBorder(Scala.bordo(12, 16, 6, 16));
 
         JLabel nome = new JLabel(c.getNome());
-        nome.setFont(Scala.font(Font.BOLD, 20));
+        nome.setFont(Scala.font(Font.BOLD, 17));
         nome.setForeground(Theme.ACCENTO);
         nome.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -530,7 +529,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
     }
 
     private JPanel pannelloStatistiche(StatisticheCorvette st) {
-        JPanel p = new JPanel(new java.awt.GridLayout(1, 0, Scala.px(12), 0));
+        JPanel p = new JPanel(new LayoutFluido(Scala.px(8),Scala.px(8)));
         p.setOpaque(false);
 
         List<StatisticheCorvette.Statistica> s = st.getStatistiche();
@@ -580,11 +579,11 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         JPanel p = new Theme.Carta();
         p.setBackground(Theme.SUPERFICIE);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(18, 20, 18, 20));
-        p.setPreferredSize(Scala.dim(140, 100));
+        p.setBorder(Scala.bordo(8, 12, 8, 12));
+        p.setPreferredSize(Scala.dim(128, 66));
 
         JLabel n = new JLabel(numero);
-        n.setFont(Scala.font(Font.BOLD, 28));
+        n.setFont(Scala.font(Font.BOLD, 20));
         n.setForeground(Theme.ACCENTO);
         n.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -594,7 +593,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         e.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         p.add(n);
-        p.add(Box.createVerticalStrut(Scala.px(6)));
+        p.add(Box.createVerticalStrut(Scala.px(3)));
         p.add(e);
         return p;
     }
@@ -602,7 +601,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
     private JPanel sezione(String titolo, JPanel corpo) {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(10, 16, 4, 16));
+        p.setBorder(Scala.bordo(7, 12, 3, 12));
 
         JLabel t = new JLabel(titolo);
         t.setFont(Theme.sezione());

@@ -9,7 +9,8 @@ partita** si lavora, poi si lavora.
 solo dove il tool ha trovato i salvataggi e quali slot esistono, con modalità,
 nome, ore giocate e data. Si sceglie lo slot e si preme **Continua**.
 
-**Schermata 2 — Hub della Corvette.** Sette schede nella barra laterale:
+**Schermata 2 — Hub della Corvette.** Sette schede nella barra laterale,
+che passa in alto quando la finestra è stretta:
 
 | Scheda | Cosa fa |
 |---|---|
@@ -22,7 +23,8 @@ nome, ore giocate e data. Si sceglie lo slot e si preme **Continua**.
 | **Libreria** | i progetti salvati, con anteprima, ricerca ed eliminazione |
 
 In alto resta sempre scritto su quale slot si sta lavorando, e il pulsante
-**Cambia salvataggio** riporta alla prima schermata.
+**Cambia salvataggio** riporta alla prima schermata. Nelle finestre strette
+lo trovi nel menu **Azioni...**, insieme a **Ripristina backup...**.
 
 ---
 
@@ -51,9 +53,9 @@ blocca non accettano niente.
 
 Quando sposti qualcosa compare una fascia gialla che dice quanti oggetti hai
 mosso, e **nella barra dei comandi si accendono due pulsanti**: *Salva le modifiche* e
-*Annulla*. Sono lì e non nella scheda perché le griglie sono alte più di 700
-pixel: messi sotto finirebbero fuori dalla vista. Funzionano con la scheda che
-stai guardando, deposito compreso.
+*Annulla*. Rimangono nella barra superiore anche quando scorri le griglie.
+Nelle finestre strette compaiono solo quando ci sono modifiche pendenti.
+Funzionano con la scheda che stai guardando, deposito compreso.
 
 Finché non premi *Salva* non viene scritto niente: puoi provare le disposizioni
 quanto vuoi, e *Annulla* rimette tutto com'era. Prima di cambiare nave, scheda o salvataggio, il programma chiede se vuoi abbandonare gli spostamenti ancora da salvare. Durante una scrittura i comandi restano bloccati.

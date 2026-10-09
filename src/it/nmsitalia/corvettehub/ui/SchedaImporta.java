@@ -13,7 +13,6 @@ import nomanssave.eY;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -22,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
@@ -29,7 +29,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
@@ -77,8 +76,10 @@ public final class SchedaImporta extends JPanel {
     public SchedaImporta() {
         setBackground(Theme.SFONDO);
         setLayout(new BorderLayout());
-        add(costruisciSinistra(), BorderLayout.WEST);
-        add(costruisciDestra(), BorderLayout.CENTER);
+        JSplitPane split = new Theme.Divisione(JSplitPane.HORIZONTAL_SPLIT,
+                Theme.scorriFluido(costruisciSinistra()), Theme.scorriFluido(costruisciDestra()));
+        Theme.adattaSplit(split, 0.43, 760, true);
+        add(split, BorderLayout.CENTER);
         add(costruisciPiede(), BorderLayout.SOUTH);
         aggiorna(null, null, null);
     }
@@ -86,11 +87,10 @@ public final class SchedaImporta extends JPanel {
     // ------------------------------------------------------------- struttura
 
     private JPanel costruisciSinistra() {
-        JPanel p = new JPanel();
+        JPanel p = Theme.colonnaFluida();
         p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(16, 16, 16, 10));
-        p.setPreferredSize(Scala.dim(420, 100));
+        p.setBorder(Scala.bordo(10, 12, 10, 6));
+        p.setMinimumSize(Scala.dim(0, 0));
 
         JLabel t = new JLabel("Progetto da importare");
         t.setFont(Scala.font(Font.BOLD, 14));
@@ -100,9 +100,9 @@ public final class SchedaImporta extends JPanel {
         zonaRilascio.setText("Trascina qui il file .json del progetto");
         zonaRilascio.setHorizontalAlignment(JLabel.CENTER);
         zonaRilascio.setVerticalAlignment(JLabel.CENTER);
-        zonaRilascio.setPreferredSize(Scala.dim(380, 84));
-        zonaRilascio.setMaximumSize(Scala.dimLarga(84));
-        zonaRilascio.setMinimumSize(Scala.dim(200, 84));
+        zonaRilascio.setPreferredSize(Scala.dim(280, 54));
+        zonaRilascio.setMaximumSize(Scala.dimLarga(54));
+        zonaRilascio.setMinimumSize(Scala.dim(0, 40));
         zonaRilascio.setOpaque(true);
         zonaRilascio.setBackground(Theme.SUPERFICIE);
         zonaRilascio.setForeground(Theme.TESTO_TENUE);
@@ -127,27 +127,27 @@ public final class SchedaImporta extends JPanel {
         JScrollPane scrollAnteprima = new JScrollPane(anteprima);
         scrollAnteprima.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
         scrollAnteprima.setAlignmentX(Component.LEFT_ALIGNMENT);
-        scrollAnteprima.setPreferredSize(Scala.dim(380, 260));
-        scrollAnteprima.setMaximumSize(Scala.dimLarga(400));
+        scrollAnteprima.setPreferredSize(Scala.dim(280, 190));
+        scrollAnteprima.setMinimumSize(Scala.dim(0, 70));
+        scrollAnteprima.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
         p.add(t);
         p.add(Box.createVerticalStrut(10));
         p.add(zonaRilascio);
         p.add(Box.createVerticalStrut(8));
         p.add(scegliFile);
-        p.add(Box.createVerticalStrut(14));
+        p.add(Box.createVerticalStrut(Scala.px(8)));
         p.add(etichetta("Anteprima del progetto"));
         p.add(Box.createVerticalStrut(4));
         p.add(scrollAnteprima);
-        p.add(Box.createVerticalGlue());
         return p;
     }
 
     private Component costruisciDestra() {
-        JPanel p = new JPanel();
+        JPanel p = Theme.colonnaFluida();
         p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(16, 6, 0, 16));
+        p.setBorder(Scala.bordo(10, 6, 0, 12));
+        p.setMinimumSize(Scala.dim(0, 0));
 
         JLabel t = new JLabel("Corvette di destinazione");
         t.setFont(Scala.font(Font.BOLD, 14));
@@ -176,13 +176,15 @@ public final class SchedaImporta extends JPanel {
         JScrollPane scrollCompat = new JScrollPane(compatibilita);
         scrollCompat.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
         scrollCompat.setAlignmentX(Component.LEFT_ALIGNMENT);
+        scrollCompat.setPreferredSize(Scala.dim(280, 160));
+        scrollCompat.setMinimumSize(Scala.dim(0, 60));
 
         p.add(t);
         p.add(Box.createVerticalStrut(6));
         p.add(sceltaCorvette);
         p.add(Box.createVerticalStrut(8));
         p.add(usaNomeBuild);
-        p.add(Box.createVerticalStrut(14));
+        p.add(Box.createVerticalStrut(Scala.px(8)));
         p.add(etichetta("Controllo di compatibilita'"));
         p.add(Box.createVerticalStrut(4));
         p.add(scrollCompat);
@@ -198,16 +200,16 @@ public final class SchedaImporta extends JPanel {
         JScrollPane scrollEsito = new JScrollPane(esito);
         scrollEsito.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
         scrollEsito.setAlignmentX(Component.LEFT_ALIGNMENT);
-        scrollEsito.setPreferredSize(Scala.dim(400, 150));
+        scrollEsito.setPreferredSize(Scala.dim(280, 100));
+        scrollEsito.setMinimumSize(Scala.dim(0, 50));
         p.add(scrollEsito);
-        p.add(Box.createVerticalGlue());
         return p;
     }
 
     private JPanel costruisciPiede() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel p = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(8, 16, 14, 16));
+        p.setBorder(Scala.bordo(6, 12, 8, 12));
 
         importa.setFont(Scala.font(Font.BOLD, 13));
         importa.addActionListener(new ActionListener() {

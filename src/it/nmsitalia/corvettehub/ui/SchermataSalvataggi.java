@@ -56,8 +56,15 @@ public final class SchermataSalvataggi extends JPanel {
     private final JLabel sottotitolo = new JLabel();
     private final JLabel messaggio = new JLabel(" ");
     private final DefaultListModel<SaveSlotInfo> modello = new DefaultListModel<SaveSlotInfo>();
-    private final JList<SaveSlotInfo> lista = new JList<SaveSlotInfo>(modello);
+    private final JList<SaveSlotInfo> lista = new JList<SaveSlotInfo>(modello) {
+        @Override public boolean getScrollableTracksViewportWidth() { return true; }
+    };
     private final JButton continua = new JButton("Continua  \u2192");
+    private final Manifesto introduzione = new Manifesto();
+    private final JLabel passoSelezione = new JLabel("WORKSPACE   /   01 — SALVATAGGIO");
+    private final javax.swing.JTextArea titoloSelezione = new javax.swing.JTextArea();
+    private JPanel testataSelezione;
+    private int modoSelezione = -1;
 
     private SaveLocator.Rilevamento rilevamento;
     private int generazione;
@@ -79,24 +86,25 @@ public final class SchermataSalvataggi extends JPanel {
     }
 
     private JPanel costruisciTestata() {
-        JPanel p = new JPanel(); p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(30, 36, 24, 36));
-        JLabel passo = new JLabel("WORKSPACE   /   01 — SALVATAGGIO");
+        JPanel p = Theme.colonnaFluida(); p.setOpaque(false);testataSelezione=p;
+        p.setBorder(Scala.bordo(16, 20, 14, 20));
+        JLabel passo = passoSelezione;
         passo.setFont(Scala.font(Font.BOLD, 11)); passo.setForeground(Theme.ACCENTO);
-        JLabel titolo = new JLabel("La tua flotta. Un nuovo orizzonte.");
-        titolo.setFont(Scala.font(Font.BOLD, 30)); titolo.setForeground(Theme.TESTO);
+        javax.swing.JTextArea titolo = titoloSelezione;
+        titolo.setText("La tua flotta. Un nuovo orizzonte.");
+        titolo.setEditable(false);titolo.setOpaque(false);titolo.setLineWrap(true);titolo.setWrapStyleWord(true);titolo.setRows(1);
+        titolo.setFont(Scala.font(Font.BOLD, 22)); titolo.setForeground(Theme.TESTO);
         sottotitolo.setText("Scegli la partita e gestisci le tue Corvette in un unico spazio.");
-        sottotitolo.setForeground(Theme.TESTO_TENUE); sottotitolo.setFont(Scala.font(Font.PLAIN, 14));
-        p.add(passo); p.add(Box.createVerticalStrut(Scala.px(10))); p.add(titolo);
-        p.add(Box.createVerticalStrut(Scala.px(8))); p.add(sottotitolo);
+        sottotitolo.setForeground(Theme.TESTO_TENUE); sottotitolo.setFont(Scala.font(Font.PLAIN, 12));
+        p.add(passo); p.add(Box.createVerticalStrut(Scala.px(6))); p.add(titolo);
+        p.add(Box.createVerticalStrut(Scala.px(5))); p.add(sottotitolo);
         return p;
     }
 
     private JPanel costruisciCorpo() {
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lista.setCellRenderer(new RendererSlot());
-        lista.setFixedCellHeight(Scala.px(84));
+        lista.setFixedCellHeight(Scala.px(62));
         lista.setBackground(Theme.SUPERFICIE);
         lista.setBorder(Scala.bordo(6, 6, 6, 6));
         lista.addListSelectionListener(new ListSelectionListener() {
@@ -117,7 +125,7 @@ public final class SchermataSalvataggi extends JPanel {
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(0, 36, 0, 36));
+        p.setBorder(Scala.bordo(0, 20, 0, 20));
 
         JLabel t = new JLabel("Slot disponibili");
         t.setFont(Theme.sezione());
@@ -130,8 +138,8 @@ public final class SchermataSalvataggi extends JPanel {
         stato.setForeground(Theme.TESTO_TENUE); stato.setFont(Scala.font(Font.PLAIN, 11));
         testa.add(stato, BorderLayout.SOUTH);
         elenco.add(testa, BorderLayout.NORTH); elenco.add(scroll, BorderLayout.CENTER);
-        p.setLayout(new BorderLayout(Scala.px(24), 0));
-        p.add(new Manifesto(), BorderLayout.WEST);
+        p.setLayout(new BorderLayout(Scala.px(16), 0));
+        p.add(introduzione, BorderLayout.WEST);
         p.add(elenco, BorderLayout.CENTER);
         return p;
     }
@@ -139,7 +147,7 @@ public final class SchermataSalvataggi extends JPanel {
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(22, 36, 28, 36));
+        p.setBorder(Scala.bordo(12, 20, 14, 20));
 
         messaggio.setForeground(Theme.TESTO_TENUE);
         messaggio.setFont(Scala.font(Font.PLAIN, 12));
@@ -164,19 +172,33 @@ public final class SchermataSalvataggi extends JPanel {
             }
         });
 
-        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel destra = new JPanel(new LayoutFluido(Scala.px(6),Scala.px(4)));
         destra.setOpaque(false);
         destra.add(cambia);
         destra.add(continua);
 
-        p.add(messaggio, BorderLayout.WEST);
-        p.add(destra, BorderLayout.EAST);
+        p.add(messaggio, BorderLayout.NORTH);
+        p.add(destra, BorderLayout.CENTER);
         return p;
     }
 
     // ------------------------------------------------------------ ricerca
 
     public void ricarica() { avvia(); }
+
+    @Override public void doLayout() {
+        boolean mostra=getWidth()>=Scala.px(960) && getHeight()>=Scala.px(600);
+        if(introduzione.isVisible()!=mostra) introduzione.setVisible(mostra);
+        boolean compatto=getWidth()<Scala.px(600) || getHeight()<Scala.px(440);
+        if(modoSelezione!=(compatto?1:0)) {
+            modoSelezione=compatto?1:0;
+            passoSelezione.setVisible(!compatto);sottotitolo.setVisible(!compatto);
+            titoloSelezione.setText(compatto?"Seleziona la partita":"La tua flotta. Un nuovo orizzonte.");
+            titoloSelezione.setFont(Scala.font(Font.BOLD,compatto?18:22));
+            testataSelezione.setBorder(compatto?Scala.bordo(8,16,8,16):Scala.bordo(16,20,14,20));
+        }
+        super.doLayout();
+    }
 
     private void avvia() {
         final int richiesta = ++generazione;

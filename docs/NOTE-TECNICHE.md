@@ -306,4 +306,4 @@ Il pacchetto portabile comprende runtime, librerie, risorse e documentazione;
 esclude sorgenti, test, configurazione locale, log, Builds e Backup. Lo
 script genera anche il file SHA-256. Il pacchetto si trova in `dist/`.
 
-Vedi [Revisione 1.2.0](REVISIONE-1.2.0.md) per correzioni, controlli e limiti.
+Vedi [Revisione 1.2.0](REVISIONE-1.2.0.md) per la sicurezza dei salvataggi e [Revisione 1.2.1](REVISIONE-1.2.1.md) per densità e layout adattivi.

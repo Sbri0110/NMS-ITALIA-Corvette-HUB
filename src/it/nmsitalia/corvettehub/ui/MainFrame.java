@@ -95,11 +95,11 @@ public final class MainFrame extends JFrame {
         // uscirebbe dallo schermo.
         Dimension schermo = Toolkit.getDefaultToolkit().getScreenSize();
         setMinimumSize(new Dimension(
-                Math.min(Scala.px(880), schermo.width - Scala.px(80)),
-                Math.min(Scala.px(560), schermo.height - Scala.px(120))));
+                Math.max(480,Math.min(720, schermo.width - 40)),
+                Math.max(360,Math.min(Math.max(480,Scala.px(320)), schermo.height - 80))));
         setSize(
-                Math.min(Scala.px(1440), schermo.width - Scala.px(60)),
-                Math.min(Scala.px(920), schermo.height - Scala.px(120)));
+                Math.min(Scala.px(1240), schermo.width - 40),
+                Math.min(Scala.px(800), schermo.height - 80));
         setLocationRelativeTo(null);
     }
 

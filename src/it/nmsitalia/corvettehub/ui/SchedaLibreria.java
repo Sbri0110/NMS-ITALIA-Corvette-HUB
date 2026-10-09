@@ -8,7 +8,6 @@ import nomanssave.eY;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -26,8 +25,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,11 +53,16 @@ public final class SchedaLibreria extends JPanel {
     private final Ascoltatore ascoltatore;
 
     private final DefaultListModel<File> modello = new DefaultListModel<File>();
-    private final JList<File> lista = new JList<File>(modello);
+    private final JList<File> lista = new JList<File>(modello) {
+        @Override public boolean getScrollableTracksViewportWidth() { return true; }
+    };
     private final JTextField cerca = new JTextField(16);
     private final JTextArea dettaglio = new JTextArea();
     private final Anteprima anteprima = new Anteprima();
     private final JLabel stato = new JLabel(" ");
+    private JButton apri, eliminaProgetto, importaProgetto;
+    private final JLabel titoloLibreria = new JLabel("Progetti nella libreria");
+    private int modoCompatto = -1;
 
     private List<File> tutti = new ArrayList<File>();
 
@@ -77,7 +79,7 @@ public final class SchedaLibreria extends JPanel {
     private Component costruisciCorpo() {
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lista.setCellRenderer(new RendererProgetto());
-        lista.setFixedCellHeight(46);
+        lista.setFixedCellHeight(Scala.px(46));
         lista.setBackground(Theme.SUPERFICIE);
         lista.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -107,17 +109,15 @@ public final class SchedaLibreria extends JPanel {
 
         JPanel sinistra = new JPanel(new BorderLayout());
         sinistra.setOpaque(false);
-        JPanel testaSinistra = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel testaSinistra = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         testaSinistra.setOpaque(false);
-        JLabel l = new JLabel("Cerca:");
-        l.setForeground(Theme.TESTO_TENUE);
-        testaSinistra.add(l);
+        cerca.setToolTipText("Cerca un progetto nella libreria");
+        cerca.putClientProperty("JTextField.placeholderText","Cerca progetti...");
         testaSinistra.add(cerca);
 
-        JPanel titolo = new JPanel();
+        JPanel titolo = Theme.colonnaFluida();
         titolo.setOpaque(false);
-        titolo.setLayout(new BoxLayout(titolo, BoxLayout.Y_AXIS));
-        JLabel t = new JLabel("Progetti nella libreria");
+        JLabel t = titoloLibreria;
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
         t.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -131,7 +131,8 @@ public final class SchedaLibreria extends JPanel {
 
         sinistra.add(titolo, BorderLayout.NORTH);
         sinistra.add(scrollLista, BorderLayout.CENTER);
-        sinistra.setBorder(Scala.bordo(14, 16, 0, 8));
+        sinistra.setBorder(Scala.bordo(10, 12, 0, 6));
+        sinistra.setMinimumSize(Scala.dim(0, 0));
 
         dettaglio.setEditable(false);
         dettaglio.setBackground(Theme.SUPERFICIE);
@@ -144,37 +145,38 @@ public final class SchedaLibreria extends JPanel {
 
         JPanel destra = new JPanel(new BorderLayout());
         destra.setOpaque(false);
-        destra.setBorder(Scala.bordo(14, 8, 0, 16));
+        destra.setBorder(Scala.bordo(10, 6, 0, 12));
+        destra.setMinimumSize(Scala.dim(0, 0));
 
         JLabel t2 = new JLabel("Anteprima del progetto");
         t2.setFont(Theme.sezione());
         t2.setForeground(Theme.TESTO_TENUE);
         t2.setBorder(Scala.bordo(0, 0, 6, 0));
 
-        anteprima.setPreferredSize(Scala.dim(520, 230));
-        scrollDettaglio.setPreferredSize(Scala.dim(520, 190));
+        anteprima.setPreferredSize(Scala.dim(320, 190));
+        anteprima.setMinimumSize(Scala.dim(0, 80));
+        scrollDettaglio.setPreferredSize(Scala.dim(320, 130));
+        scrollDettaglio.setMinimumSize(Scala.dim(0, 50));
 
         destra.add(t2, BorderLayout.NORTH);
-        destra.add(anteprima, BorderLayout.CENTER);
-        destra.add(scrollDettaglio, BorderLayout.SOUTH);
+        JSplitPane contenuto = new Theme.Divisione(JSplitPane.VERTICAL_SPLIT, anteprima, scrollDettaglio);
+        Theme.adattaSplit(contenuto, 0.63, 0, false);
+        destra.add(contenuto, BorderLayout.CENTER);
 
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sinistra, destra);
-        split.setDividerLocation(Scala.px(330));
-        split.setResizeWeight(0.35);
-        split.setBorder(null);
-        split.setOpaque(false);
+        JSplitPane split = new Theme.Divisione(JSplitPane.HORIZONTAL_SPLIT, sinistra, destra);
+        Theme.adattaSplit(split, 0.35, 0, false);
         return split;
     }
 
     private JPanel costruisciPiede() {
-        JPanel p = new JPanel(new BorderLayout());
+        JPanel p = new JPanel(new BorderLayout(0,Scala.px(4)));
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(10, 16, 14, 16));
+        p.setBorder(Scala.bordo(6, 12, 8, 12));
 
         stato.setForeground(Theme.TESTO_TENUE);
         stato.setFont(Scala.font(Font.PLAIN, 12));
 
-        JButton apri = new JButton("Apri cartella");
+        apri = new JButton("Apri cartella");
         apri.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -183,6 +185,7 @@ public final class SchedaLibreria extends JPanel {
         });
 
         JButton elimina = new JButton("Elimina progetto");
+        eliminaProgetto=elimina;
         elimina.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -191,6 +194,7 @@ public final class SchedaLibreria extends JPanel {
         });
 
         JButton importa = new JButton("Importa nel salvataggio...");
+        importaProgetto=importa;
         importa.setToolTipText("Apri il progetto nella scheda Importa");
         importa.addActionListener(e -> {
             File f = lista.getSelectedValue();
@@ -199,15 +203,27 @@ public final class SchedaLibreria extends JPanel {
         lista.addListSelectionListener(e -> importa.setEnabled(lista.getSelectedValue() != null));
         importa.setEnabled(false);
 
-        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        destra.setOpaque(false);
-        destra.add(apri);
-        destra.add(elimina);
-        destra.add(importa);
-
-        p.add(stato, BorderLayout.WEST);
-        p.add(destra, BorderLayout.EAST);
+        JPanel azioni=new JPanel(new LayoutFluido(Scala.px(6),Scala.px(4)));azioni.setOpaque(false);
+        azioni.add(apri);azioni.add(elimina);azioni.add(importa);
+        p.add(stato,BorderLayout.NORTH);p.add(azioni,BorderLayout.CENTER);
         return p;
+    }
+
+    @Override public void doLayout() {
+        boolean compatto=getWidth()>0 && getWidth()<Scala.px(760);
+        if(importaProgetto!=null && modoCompatto!=(compatto?1:0)) {
+            modoCompatto=compatto?1:0;
+            aggiornaTitolo();
+            stato.setVisible(!compatto);
+            eliminaProgetto.setText(compatto?"Elimina...":"Elimina progetto");
+            importaProgetto.setText(compatto?"Importa...":"Importa nel salvataggio...");
+        }
+        super.doLayout();
+    }
+
+    private void aggiornaTitolo() {
+        titoloLibreria.setText(modoCompatto==1 ? "Progetti · "+modello.size() : "Progetti nella libreria");
+        titoloLibreria.setToolTipText(stato.getText()+" · "+cartella.getAbsolutePath());
     }
 
     // ---------------------------------------------------------------- dati
@@ -228,6 +244,7 @@ public final class SchedaLibreria extends JPanel {
         }
         stato.setText(modello.size() + " progetti nella libreria locale");
         stato.setToolTipText(cartella.getAbsolutePath());
+        aggiornaTitolo();
         if (modello.isEmpty()) {
             dettaglio.setText("La libreria e' vuota.\n\n"
                     + "Usa la scheda Esporta per creare il primo progetto da una\n"
@@ -360,12 +377,20 @@ public final class SchedaLibreria extends JPanel {
     }
 
     /** Rende leggibile una riga dell'elenco. */
-    private static final class RendererProgetto extends JLabel
+    private static final class RendererProgetto extends JPanel
             implements javax.swing.ListCellRenderer<File> {
 
+        private final JLabel nomeProgetto = new JLabel();
+        private final JLabel metadati = new JLabel();
+
         RendererProgetto() {
+            super(new BorderLayout());
             setOpaque(true);
             setBorder(Scala.bordo(6, 12, 6, 12));
+            nomeProgetto.setFont(Scala.font(Font.BOLD,12));
+            metadati.setFont(Scala.font(Font.PLAIN,10));
+            add(nomeProgetto,BorderLayout.NORTH);
+            add(metadati,BorderLayout.SOUTH);
         }
 
         @Override
@@ -376,16 +401,13 @@ public final class SchedaLibreria extends JPanel {
                 nome = nome.substring(0, nome.length() - 5);
             }
             String data = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(f.lastModified()));
-            setText("<html><b>" + escape(nome) + "</b><br><span style='font-size:10px'>"
-                    + data + " · " + (f.length() / 1024) + " KB</span></html>");
-            setFont(Scala.font(Font.PLAIN, 12));
+            nomeProgetto.setText(nome);
+            metadati.setText(data + " · " + (f.length() / 1024) + " KB");
+            setToolTipText(nome + " · " + metadati.getText());
             setBackground(sel ? Theme.ACCENTO_SCURO : Theme.SUPERFICIE);
-            setForeground(sel ? java.awt.Color.WHITE : Theme.TESTO);
+            nomeProgetto.setForeground(sel ? java.awt.Color.WHITE : Theme.TESTO);
+            metadati.setForeground(sel ? java.awt.Color.WHITE : Theme.TESTO_TENUE);
             return this;
-        }
-
-        private static String escape(String s) {
-            return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
         }
     }
 }

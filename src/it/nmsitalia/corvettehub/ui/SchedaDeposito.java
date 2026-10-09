@@ -12,7 +12,6 @@ import it.nmsitalia.corvettehub.domain.WrapperBuild;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -24,6 +23,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BasicStroke;
@@ -31,7 +32,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -64,16 +64,23 @@ import java.util.Set;
  */
 public final class SchedaDeposito extends JPanel implements SchedaModificabile {
 
-    private final JLabel intestazione = new JLabel();
-    private final JLabel contatore = new JLabel();
+    private final JTextArea intestazione = new JTextArea();
+    private final JTextArea contatore = new JTextArea();
     private final JTextField cerca = new JTextField(18);
     private final JLabel riepilogo = new JLabel(" ");
-    private final JPanel barraCategorie = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
-    private final JPanel griglia = new JPanel();
+    private final JPanel barraCategorie = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
+    private final JComboBox<String> sceltaCategoria = new JComboBox<String>();
+    private final JPanel categoriaCompatta = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
+    private final JPanel griglia = Theme.colonnaFluida();
     private final JComboBox<String> sceltaBuild = new JComboBox<String>();
     private final JTextArea compatibilita = new JTextArea();
 
     private String categoriaScelta = "Tutte";
+    private final List<String> categorieDisponibili = new ArrayList<String>();
+    private boolean aggiornaSelettoreCategorie;
+    private String titoloCompleto = "Deposito moduli · Stazione Spaziale";
+    private String contatoreCompleto = " ";
+    private String contatoreCompatto = " ";
     private SaveSlotInfo slot;
     private List<LettoreInventari.Voce> voci = new ArrayList<LettoreInventari.Voce>();
     private List<File> buildDisponibili = new ArrayList<File>();
@@ -91,33 +98,79 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         this.cartellaLibreria = cartellaLibreria;
         setBackground(Theme.SFONDO);
         setLayout(new BorderLayout());
-        add(costruisciTestata(), BorderLayout.NORTH);
-        add(costruisciCorpo(), BorderLayout.CENTER);
+        final JPanel testata = costruisciTestata();
+        final Component corpo = costruisciCorpo();
+        // La testata puo' occupare piu' righe al DPI alto: scorre con il corpo,
+        // che mantiene uno spazio utile senza sottrarre il footer alle azioni.
+        JPanel corpoFluido = new JPanel(new BorderLayout()) {
+            @Override
+            public Dimension getPreferredSize() {
+                JViewport viewport = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+                int disponibile = viewport == null ? 0 : viewport.getHeight();
+                int altezzaCorpo = Math.max(Scala.px(200), disponibile - testata.getPreferredSize().height);
+                return new Dimension(getWidth(), altezzaCorpo);
+            }
+        };
+        corpoFluido.setOpaque(false);
+        corpoFluido.add(corpo, BorderLayout.CENTER);
+        JPanel pagina = Theme.colonnaFluida();
+        pagina.add(testata);
+        pagina.add(corpoFluido);
+        JScrollPane scrollPagina = new JScrollPane(pagina);
+        scrollPagina.setBorder(null);
+        scrollPagina.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPagina.getVerticalScrollBar().setUnitIncrement(Scala.px(24));
+        add(scrollPagina, BorderLayout.CENTER);
         add(costruisciPiede(), BorderLayout.SOUTH);
     }
 
     // ------------------------------------------------------------- struttura
 
+    @Override
+    public void doLayout() {
+        compatta();
+        super.doLayout();
+    }
+
+    private void compatta() {
+        boolean stretta = getWidth() > 0 && getWidth() < Scala.px(760);
+        if (barraCategorie.isVisible() == stretta) barraCategorie.setVisible(!stretta);
+        if (categoriaCompatta.isVisible() != stretta) categoriaCompatta.setVisible(stretta);
+        String titolo = stretta ? "Deposito moduli · Stazione Spaziale" : titoloCompleto;
+        String conteggio = stretta ? contatoreCompatto : contatoreCompleto;
+        if (!titolo.equals(intestazione.getText())) intestazione.setText(titolo);
+        if (!conteggio.equals(contatore.getText())) contatore.setText(conteggio);
+    }
+
     private JPanel costruisciTestata() {
-        JPanel p = new JPanel();
+        JPanel p = Theme.colonnaFluida();
         p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(12, 16, 8, 16));
+        p.setBorder(Scala.bordo(8, 12, 6, 12));
 
         intestazione.setFont(Scala.font(Font.BOLD, 14));
         intestazione.setForeground(Theme.TESTO);
         intestazione.setAlignmentX(Component.LEFT_ALIGNMENT);
+        intestazione.setEditable(false);
+        intestazione.setFocusable(false);
+        intestazione.setOpaque(false);
+        intestazione.setLineWrap(true);
+        intestazione.setWrapStyleWord(true);
 
         contatore.setFont(Scala.font(Font.PLAIN, 12));
         contatore.setForeground(Theme.ACCENTO);
         contatore.setAlignmentX(Component.LEFT_ALIGNMENT);
+        contatore.setEditable(false);
+        contatore.setFocusable(false);
+        contatore.setOpaque(false);
+        contatore.setLineWrap(true);
+        contatore.setWrapStyleWord(true);
 
-        JPanel rigaCerca = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        JPanel rigaCerca = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         rigaCerca.setOpaque(false);
         rigaCerca.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel l2 = new JLabel("Cerca:");
         l2.setForeground(Theme.TESTO_TENUE);
-        cerca.setPreferredSize(Scala.dim(240, 26));
+        cerca.setPreferredSize(Scala.dim(210, 26));
         rigaCerca.add(l2);
         rigaCerca.add(cerca);
 
@@ -140,21 +193,40 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
 
         barraCategorie.setOpaque(false);
         barraCategorie.setAlignmentX(Component.LEFT_ALIGNMENT);
+        categoriaCompatta.setOpaque(false);
+        categoriaCompatta.setVisible(false);
+        JLabel etichettaCategoria = new JLabel("Categoria:");
+        etichettaCategoria.setForeground(Theme.TESTO_TENUE);
+        categoriaCompatta.add(etichettaCategoria);
+        sceltaCategoria.setPreferredSize(Scala.dim(190, 28));
+        categoriaCompatta.add(sceltaCategoria);
+        sceltaCategoria.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int indice = sceltaCategoria.getSelectedIndex();
+                if (aggiornaSelettoreCategorie || indice < 0 || indice >= categorieDisponibili.size()) return;
+                String scelta = categorieDisponibili.get(indice);
+                if (scelta.equals(categoriaScelta)) return;
+                categoriaScelta = scelta;
+                aggiornaCategorie();
+                aggiornaFiltro();
+            }
+        });
 
         p.add(intestazione);
         p.add(Box.createVerticalStrut(4));
         p.add(contatore);
-        p.add(Box.createVerticalStrut(10));
+        p.add(Box.createVerticalStrut(Scala.px(6)));
         p.add(rigaCerca);
         p.add(Box.createVerticalStrut(4));
         p.add(barraCategorie);
+        p.add(categoriaCompatta);
         return p;
     }
 
     private Component costruisciCorpo() {
-        griglia.setLayout(new BoxLayout(griglia, BoxLayout.Y_AXIS));
         griglia.setBackground(Theme.SFONDO);
-        griglia.setBorder(Scala.bordo(8, 8, 8, 8));
+        griglia.setBorder(Scala.bordo(6));
 
         JScrollPane scrollGriglia = new JScrollPane(griglia);
         scrollGriglia.setBorder(BorderFactory.createLineBorder(Theme.BORDO));
@@ -173,24 +245,23 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
 
         JPanel destra = new JPanel(new BorderLayout());
         destra.setOpaque(false);
-        destra.setMinimumSize(Scala.dim(320, 100));
+        destra.setMinimumSize(Scala.dim(0, 0));
 
-        JPanel testaDestra = new JPanel();
+        JPanel testaDestra = Theme.colonnaFluida();
         testaDestra.setOpaque(false);
-        testaDestra.setLayout(new BoxLayout(testaDestra, BoxLayout.Y_AXIS));
 
         JLabel t2 = new JLabel("Compatibilita' con una build");
         t2.setFont(Theme.sezione());
         t2.setForeground(Theme.TESTO_TENUE);
         t2.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JPanel rigaBuild = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel rigaBuild = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         rigaBuild.setOpaque(false);
         rigaBuild.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel lb = new JLabel("Build:");
         lb.setForeground(Theme.TESTO_TENUE);
         rigaBuild.add(lb);
-        sceltaBuild.setPreferredSize(Scala.dim(210, 26));
+        sceltaBuild.setPreferredSize(Scala.dim(190, 26));
         sceltaBuild.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -209,18 +280,15 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         destra.add(testaDestra, BorderLayout.NORTH);
         destra.add(scrollCompat, BorderLayout.CENTER);
 
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sinistra, destra);
-        split.setDividerLocation(700);
-        split.setResizeWeight(0.7);
-        split.setBorder(null);
-        split.setOpaque(false);
+        JSplitPane split = new Theme.Divisione(JSplitPane.HORIZONTAL_SPLIT, sinistra, destra);
+        Theme.adattaSplit(split, 0.66, 760, true);
         return split;
     }
 
     private JPanel costruisciPiede() {
-        JPanel p = new JPanel(new BorderLayout());
+        JPanel p = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(10, 16, 14, 16));
+        p.setBorder(Scala.bordo(6, 12, 8, 12));
 
         riepilogo.setForeground(Theme.TESTO_TENUE);
         riepilogo.setFont(Scala.font(Font.PLAIN, 12));
@@ -233,12 +301,8 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
             }
         });
 
-        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        destra.setOpaque(false);
-        destra.add(esporta);
-
-        p.add(riepilogo, BorderLayout.WEST);
-        p.add(destra, BorderLayout.EAST);
+        p.add(riepilogo);
+        p.add(esporta);
         return p;
     }
 
@@ -272,21 +336,26 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
             }
         }
 
-        intestazione.setText("Deposito moduli  ·  Stazione Spaziale"
-                + (descrizioneSlot == null ? "" : "   —   " + descrizioneSlot));
+        titoloCompleto = "Deposito moduli  ·  Stazione Spaziale"
+                + (descrizioneSlot == null ? "" : "   —   " + descrizioneSlot);
 
         if (slot == null) {
-            contatore.setText("Nessuno slot selezionato.");
+            contatoreCompleto = "Nessuno slot selezionato.";
+            contatoreCompatto = contatoreCompleto;
         } else {
             int distinti = new java.util.LinkedHashSet<String>(idDistinti()).size();
             int pezzi = 0;
             for (int i = 0; i < voci.size(); i++) {
                 pezzi += voci.get(i).quantita;
             }
-            contatore.setText(distinti + " moduli distinti  ·  " + voci.size()
+            contatoreCompleto = distinti + " moduli distinti  ·  " + voci.size()
                     + " caselle occupate su " + (larghezza * altezza)
-                    + "  ·  " + pezzi + " pezzi totali");
+                    + "  ·  " + pezzi + " pezzi totali";
+            contatoreCompatto = distinti + " tipi · " + voci.size() + "/" + (larghezza * altezza)
+                    + " caselle · " + pezzi + " pezzi";
         }
+        contatore.setToolTipText(contatoreCompleto);
+        compatta();
 
         CatalogoParti cat = CatalogoParti.get();
         riepilogo.setText(cat.getTotale() + " parti costruibili su una Corvette: "
@@ -342,9 +411,9 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
             int righe = filtrato
                     ? (mostrate.size() + larghezza - 1) / larghezza
                     : altezza;
-            // la griglia sta in un pannello a se', allineato a sinistra: cosi'
-            // le caselle restano quadrate invece di allargarsi
-            JPanel riga = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            // Il pannello segue il viewport: la griglia puo' adattare il lato
+            // delle caselle senza perdere le coordinate dell'inventario.
+            JPanel riga = new JPanel(new BorderLayout());
             riga.setOpaque(false);
             riga.setAlignmentX(Component.LEFT_ALIGNMENT);
             if (!filtrato && layout != null) {
@@ -357,11 +426,11 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
                             avvisaModifiche();
                         }
                     }
-                }));
+                }), BorderLayout.CENTER);
             } else {
                 // con un filtro attivo la griglia mostra solo i moduli trovati:
                 // li' non si trascina, perche' le posizioni non sarebbero quelle vere
-                riga.add(new GrigliaModuli(larghezza, righe, mostrate));
+                riga.add(new GrigliaModuli(larghezza, righe, mostrate), BorderLayout.CENTER);
             }
             griglia.add(riga);
         }
@@ -511,8 +580,25 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         }
 
         barraCategorie.add(new Chip("Tutte", voci.size()));
+        DefaultComboBoxModel<String> selettore = new DefaultComboBoxModel<String>();
+        categorieDisponibili.clear();
+        categorieDisponibili.add("Tutte");
+        selettore.addElement("Tutte · " + voci.size());
         for (java.util.Map.Entry<String, Integer> e : conteggi.entrySet()) {
             barraCategorie.add(new Chip(e.getKey(), e.getValue().intValue()));
+            categorieDisponibili.add(e.getKey());
+            selettore.addElement(e.getKey() + " · " + e.getValue());
+        }
+        if (!categorieDisponibili.contains(categoriaScelta)) {
+            categorieDisponibili.add(categoriaScelta);
+            selettore.addElement(categoriaScelta + " · 0");
+        }
+        aggiornaSelettoreCategorie = true;
+        try {
+            sceltaCategoria.setModel(selettore);
+            sceltaCategoria.setSelectedIndex(categorieDisponibili.indexOf(categoriaScelta));
+        } finally {
+            aggiornaSelettoreCategorie = false;
         }
         barraCategorie.revalidate();
         barraCategorie.repaint();

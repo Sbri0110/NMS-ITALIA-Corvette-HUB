@@ -10,13 +10,13 @@ import nomanssave.eY;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -24,8 +24,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,18 +63,19 @@ public final class SchedaRinomina extends JPanel {
     public SchedaRinomina() {
         setBackground(Theme.SFONDO);
         setLayout(new BorderLayout());
-        add(costruisciSinistra(), BorderLayout.WEST);
-        add(costruisciDestra(), BorderLayout.CENTER);
+        JSplitPane split = new Theme.Divisione(JSplitPane.HORIZONTAL_SPLIT,
+                Theme.scorriFluido(costruisciSinistra()), costruisciDestra());
+        Theme.adattaSplit(split, 0.42, 760, true);
+        add(split, BorderLayout.CENTER);
         add(costruisciPiede(), BorderLayout.SOUTH);
         aggiorna(null, null, null);
     }
 
     private JPanel costruisciSinistra() {
-        JPanel p = new JPanel();
+        JPanel p = Theme.colonnaFluida();
         p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(Scala.bordo(16, 16, 16, 12));
-        p.setPreferredSize(Scala.dim(400, 100));
+        p.setBorder(Scala.bordo(10, 12, 10, 6));
+        p.setMinimumSize(Scala.dim(0, 0));
 
         intestazione.setFont(Scala.font(Font.BOLD, 14));
         intestazione.setForeground(Theme.TESTO);
@@ -119,26 +118,32 @@ public final class SchedaRinomina extends JPanel {
         anteprima.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         p.add(intestazione);
-        p.add(Box.createVerticalStrut(14));
+        p.add(Box.createVerticalStrut(Scala.px(8)));
         p.add(etichetta("Corvette"));
         p.add(Box.createVerticalStrut(4));
         p.add(sceltaCorvette);
-        p.add(Box.createVerticalStrut(16));
+        p.add(Box.createVerticalStrut(Scala.px(10)));
         p.add(etichetta("Nome attuale"));
         p.add(Box.createVerticalStrut(4));
         p.add(nomeAttuale);
-        p.add(Box.createVerticalStrut(16));
+        p.add(Box.createVerticalStrut(Scala.px(10)));
         p.add(etichetta("Nuovo nome"));
         p.add(Box.createVerticalStrut(4));
         p.add(nomeNuovo);
         p.add(Box.createVerticalStrut(10));
         p.add(anteprima);
-        p.add(Box.createVerticalGlue());
+        p.add(Box.createVerticalStrut(Scala.px(12)));
 
-        JLabel nota = new JLabel("<html><body style='width:350px'>"
-                + "Prima di scrivere il tool fa una copia di sicurezza verificata di "
-                + "<b>entrambi</b> i file dello slot, poi rilegge per confermare. "
-                + "Se qualcosa non torna, rimette a posto da solo.</body></html>");
+        JTextArea nota = new JTextArea("Prima di scrivere il tool fa una copia di sicurezza verificata di "
+                + "entrambi i file dello slot, poi rilegge per confermare. "
+                + "Se qualcosa non torna, rimette a posto da solo.");
+        nota.setEditable(false);
+        nota.setFocusable(false);
+        nota.setOpaque(false);
+        nota.setLineWrap(true);
+        nota.setWrapStyleWord(true);
+        nota.setColumns(24);
+        nota.setMinimumSize(Scala.dim(0, 0));
         nota.setForeground(Theme.TESTO_TENUE);
         nota.setFont(Scala.font(Font.PLAIN, 11));
         nota.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -155,7 +160,8 @@ public final class SchedaRinomina extends JPanel {
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(16, 0, 0, 16));
+        p.setBorder(Scala.bordo(10, 6, 0, 12));
+        p.setMinimumSize(Scala.dim(0, 0));
 
         JLabel t = new JLabel("Esito");
         t.setFont(Theme.sezione());
@@ -168,9 +174,9 @@ public final class SchedaRinomina extends JPanel {
     }
 
     private JPanel costruisciPiede() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel p = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(8, 16, 14, 16));
+        p.setBorder(Scala.bordo(6, 12, 8, 12));
         rinomina.setFont(Scala.font(Font.BOLD, 13));
         rinomina.addActionListener(new ActionListener() {
             @Override

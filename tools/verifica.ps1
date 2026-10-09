@@ -24,6 +24,8 @@ Get-Content -LiteralPath (Join-Path $taskTest 'regressioni.log') -Tail 16
 if ($testExit -ne 0) { throw "Regressioni fallite. Dettagli in $taskTest\regressioni.log" }
 if ($Anteprime) {
     foreach ($scale in @('1','1.75','2')) {
+        & $taskJava '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.ui.RegressioniLayout $scale
+        if ($LASTEXITCODE -ne 0) { throw "Verifica componenti layout fallita alla scala $scale" }
         & $taskJava -Xmx2g '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.ui.AnteprimePremium $scale
         if ($LASTEXITCODE -ne 0) { throw "Verifica UI fallita alla scala $scale" }
     }

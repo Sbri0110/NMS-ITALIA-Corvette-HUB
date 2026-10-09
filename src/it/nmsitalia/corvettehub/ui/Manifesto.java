@@ -7,11 +7,11 @@ import java.awt.geom.Path2D;
 /** Pannello introduttivo, disegno vettoriale e percorso di lavoro. */
 public final class Manifesto extends JPanel {
     public Manifesto() {
-        setOpaque(false); setPreferredSize(Scala.dim(300,420));
-        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS)); setBorder(Scala.bordo(26));
+        setOpaque(false); setPreferredSize(Scala.dim(260,360));
+        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS)); setBorder(Scala.bordo(18));
         add(testo("IL TUO CENTRO DI COMANDO", 10, Theme.ACCENTO, true));
         add(Box.createVerticalStrut(Scala.px(16)));
-        add(testo("Pronto a partire.", 23, Theme.TESTO, true));
+        add(testo("Pronto a partire.", 19, Theme.TESTO, true));
         add(Box.createVerticalStrut(Scala.px(12)));
         add(testo("<html>Progetti, inventari e tecnologie.<br>Ogni Corvette, al suo posto.</html>",13,Theme.TESTO_TENUE,false));
         add(Box.createVerticalGlue());
@@ -20,8 +20,8 @@ public final class Manifesto extends JPanel {
         add(testo("02   Esplora il tuo hangar",13,Theme.TESTO_TENUE,false));
         add(Box.createVerticalStrut(Scala.px(14)));
         add(testo("03   Scambia i tuoi progetti",13,Theme.TESTO_TENUE,false));
-        add(Box.createVerticalStrut(Scala.px(30)));
-        add(testo("●  Backup prima di ogni modifica",11,Theme.OK,false));
+        add(Box.createVerticalStrut(Scala.px(18)));
+        add(testo("●  Backup prima di ogni modifica",10,Theme.OK,false));
         add(Box.createVerticalStrut(Scala.px(8)));
         add(testo("<html>Le scritture sono verificate.<br>La tua partita resta al centro.</html>",11,Theme.TESTO_TENUE,false));
     }
