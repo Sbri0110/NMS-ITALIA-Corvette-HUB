@@ -98,18 +98,41 @@ public final class ScrittoreSalvataggio {
 
     // ------------------------------------------------------------- scrittura
 
-    public static Esito scrivi(SaveLocator.Rilevamento rilevamento, SaveSlotInfo slot,
+    public static synchronized Esito scrivi(SaveLocator.Rilevamento rilevamento, SaveSlotInfo slot,
                                Modifica modifica) {
         Esito esito = new Esito();
         StringBuilder log = new StringBuilder();
 
-        if (rilevamento == null || slot == null) {
+        if (rilevamento == null || slot == null || modifica == null) {
             return Esito.errore("Nessun salvataggio selezionato.");
         }
-        if (giocoInEsecuzione()) {
-            return Esito.errore("No Man's Sky e' in esecuzione. Chiudi il gioco prima di "
-                    + "scrivere, altrimenti il gioco potrebbe sovrascrivere le modifiche.");
+        String bloccoGioco = verificaGioco();
+        if (bloccoGioco != null) return Esito.errore(bloccoGioco);
+
+        // Riapre lo storage: non scrive su modelli o indici rimasti in memoria.
+        SaveLocator.Rilevamento fresco = SaveLocator.apri(rilevamento.cartella, rilevamento.tipo);
+        if (fresco == null) return Esito.errore("Il salvataggio non si riapre.");
+        SaveSlotInfo slotFresco = null;
+        for (nomanssave.ft candidato : fresco.storage.bU()) {
+            if (candidato != null && candidato.getIndex() == slot.getIndice()) {
+                slotFresco = new SaveSlotInfo(candidato);
+                break;
+            }
         }
+        if (slotFresco == null || slotFresco.getModello() == null) {
+            return Esito.errore("Lo slot non è più leggibile.");
+        }
+        try {
+            if (slot.getModello() == null || !java.util.Arrays.equals(
+                    fj.g(slot.getModello()), fj.g(slotFresco.getModello()))) {
+                return Esito.errore("Il salvataggio è cambiato. Ricaricalo prima di modificare.");
+            }
+        } catch (Throwable t) {
+            return Esito.errore("Non riesco a verificare lo stato del salvataggio: " + t);
+        }
+        rilevamento = fresco;
+        SaveSlotInfo slotSchermo = slot;
+        slot = slotFresco;
 
         // ---- 1. i file dello slot
         //  Uno slot ne ha due: lo stato corrente e il punto di ripristino. La
@@ -120,7 +143,9 @@ public final class ScrittoreSalvataggio {
         if (!indice.isFile()) {
             // Non e' il formato a contenitori dell'app Xbox: e' il formato a
             // file singoli di Steam, GOG ed Epic. Il percorso e' diverso.
-            return scriviFileSingolo(rilevamento, slot, modifica);
+            Esito risultato = scriviFileSingolo(rilevamento, slot, modifica);
+            slotSchermo.invalidaModello();
+            return risultato;
         }
         List<fs> fileSlot = slot.getFile();
         if (fileSlot.isEmpty()) {
@@ -151,7 +176,9 @@ public final class ScrittoreSalvataggio {
             // descrizione, quindi cercare per nome rischia di far scrivere nel
             // file sbagliato (e' successo: e' stato modificato l'Auto invece del
             // Manual).
-            File[] contenitore = trovaContenitore(radiceStorage, atteso);
+            java.util.Set<File> esclusi = new java.util.HashSet<File>();
+            for (Unita precedente : unita) esclusi.add(precedente.descrittore.getParentFile());
+            File[] contenitore = trovaContenitore(radiceStorage, atteso, esclusi);
             if (contenitore == null) {
                 return Esito.errore("Non riesco a individuare il contenitore del file "
                         + (i + 1) + " dello slot.");
@@ -204,6 +231,19 @@ public final class ScrittoreSalvataggio {
                     .append('\n');
         }
 
+        // Modelli indipendenti del punto corrente, con gli alias del parser.
+        // Il JSON generico perde gli alias BaseContext/PlayerStateData.
+        try {
+            byte[] corrente = fj.g(slot.getModello());
+            for (Unita u : unita) {
+                try (nomanssave.ff reader = new nomanssave.ff(
+                        new java.io.ByteArrayInputStream(corrente), 0)) {
+                    u.modello = reader.a(nomanssave.eG.jV);
+                }
+            }
+        } catch (Throwable t) {
+            return Esito.errore("Non riesco a preparare i modelli del salvataggio: " + t);
+        }
         // ---- 2. backup di tutto, prima di toccare qualsiasi cosa
         List<File> cartelle = new ArrayList<File>();
         for (int i = 0; i < unita.size(); i++) {
@@ -230,6 +270,8 @@ public final class ScrittoreSalvataggio {
         for (int i = 0; i < unita.size(); i++) {
             Unita u = unita.get(i);
             try {
+                // Entrambi i punti di salvataggio ricevono la stessa modifica
+                // sullo stato corrente; gli indici del ripristino possono differire.
                 modifica.applica(u.modello);
             } catch (Throwable t) {
                 ripristina(backup, cartelle, indice);
@@ -270,7 +312,11 @@ public final class ScrittoreSalvataggio {
 
             // indice: cambia SOLO la dimensione totale del contenitore
             long vecchioTotale = u.dimensionePayloadOriginale + u.descrittoreOriginale.length;
-            int offTotale = cercaLong(indiceCorrente, vecchioTotale);
+            int offTotale = offsetTotale(indiceCorrente, u.descrittore.getParentFile().getName(), vecchioTotale);
+            if (offTotale < 0) {
+                ripristina(backup, cartelle, indice);
+                return Esito.errore("Il contenitore non ha una dimensione verificabile nell'indice. Backup ripristinato.");
+            }
             if (offTotale >= 0) {
                 byte[] idx = indiceCorrente.clone();
                 scriviLong(idx, offTotale, u.payloadNuovo.length + u.descrittoreOriginale.length);
@@ -299,6 +345,7 @@ public final class ScrittoreSalvataggio {
         }
         log.append("verifica               : superata\n");
 
+        slotSchermo.invalidaModello();
         esito.riuscito = true;
         esito.messaggio = "Modifica scritta e verificata su " + unita.size()
                 + (unita.size() == 1 ? " file." : " file dello slot.");
@@ -494,7 +541,7 @@ public final class ScrittoreSalvataggio {
             return null;
         }
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US);
-        File destinazione = new File(new File(cartellaProgramma(), "Backup"), f.format(new Date()));
+        File destinazione = new File(new File(cartellaProgramma(), "Backup"), f.format(new Date()) + "_" + java.util.UUID.randomUUID().toString().substring(0, 8));
         if (!destinazione.mkdirs()) {
             return null;
         }
@@ -528,7 +575,7 @@ public final class ScrittoreSalvataggio {
             }
             scriviAtomico(new File(destinazione, "backup.txt"), b.toString().getBytes(UTF8));
         } catch (Throwable ignored) {
-            // la nota e' un extra, non blocca il backup
+            return null; // Il marcatore identifica solo backup completi.
         }
         return destinazione;
     }
@@ -536,19 +583,16 @@ public final class ScrittoreSalvataggio {
     /** Rimette a posto i file singoli da un backup. */
     private static void ripristinaFile(File backup, File radiceStorage) {
         File[] contenuto = backup.listFiles();
-        if (contenuto == null) {
-            return;
+        if (contenuto == null) throw new IllegalStateException("Backup non leggibile: " + backup);
+        java.util.List<String> errori = new java.util.ArrayList<String>();
+        for (File f : contenuto) {
+            if (!f.isFile() || !(FILE_SALVATAGGIO.matcher(f.getName()).matches()
+                    || f.getName().matches("mf_save\\d*\\.hg"))) continue;
+            try { copia(f, new File(radiceStorage, f.getName())); }
+            catch (IOException e) { errori.add(e.getMessage()); }
         }
-        for (int i = 0; i < contenuto.length; i++) {
-            if (!contenuto[i].isFile() || "backup.txt".equals(contenuto[i].getName())) {
-                continue;
-            }
-            try {
-                copia(contenuto[i], new File(radiceStorage, contenuto[i].getName()));
-            } catch (Throwable ignored) {
-                // si prova a rimettere gli altri
-            }
-        }
+        if (!errori.isEmpty()) throw new IllegalStateException("Ripristino incompleto: "
+                + errori + ". Backup disponibile in " + backup.getAbsolutePath());
     }
 
     /**
@@ -577,6 +621,14 @@ public final class ScrittoreSalvataggio {
                     + "cartella Steam, e viceversa.");
         }
 
+        for (File f : salvati) {
+            if (!new File(backup, "mf_" + f.getName()).isFile()) {
+                return Esito.errore("Backup incompleto: manca il manifest di " + f.getName());
+            }
+        }
+        if (new File(radiceStorage, "containers.index").isFile()) {
+            return Esito.errore("Questo backup Steam non è compatibile con lo storage Xbox.");
+        }
         // copia di sicurezza dello stato attuale, prima di toccare
         List<File> attuali = new ArrayList<File>();
         for (int i = 0; i < salvati.size(); i++) {
@@ -616,12 +668,14 @@ public final class ScrittoreSalvataggio {
                 log.append("rimesso a posto      : ").append(nome).append('\n');
             }
         } catch (Throwable t) {
+            ripristinaFile(prima, radiceStorage);
             return Esito.errore("Il ripristino non e' riuscito: " + t
                     + "\n\nLo stato di prima del tentativo e' in:\n" + prima.getAbsolutePath());
         }
 
         SaveLocator.Rilevamento rd = SaveLocator.apri(radiceStorage);
         if (rd == null || rd.storage.bU() == null) {
+            ripristinaFile(prima, radiceStorage);
             return Esito.errore("I file sono stati rimessi a posto ma il salvataggio non si "
                     + "riapre.\n\nLo stato di prima del tentativo e' in:\n"
                     + prima.getAbsolutePath());
@@ -701,7 +755,8 @@ public final class ScrittoreSalvataggio {
                     return "Il descrittore del file " + (i + 1) + " dichiara " + dichiarata
                             + " byte invece di " + u.decompressoNuovo.length + ".";
                 }
-                for (int k = 280; k < u.descrittoreOriginale.length; k++) {
+                for (int k = 0; k < u.descrittoreOriginale.length; k++) {
+                    if (k >= 16 && k < 20) continue;
                     if (d[k] != u.descrittoreOriginale[k]) {
                         return "La coda del descrittore del file " + (i + 1)
                                 + " e\' cambiata al byte " + k + ".";
@@ -736,8 +791,15 @@ public final class ScrittoreSalvataggio {
      * esattamente dove rimettere ogni cosa, senza doverlo indovinare.
      */
     private static File creaBackup(List<File> cartelle, File indice) {
+        cartelle = new ArrayList<File>(cartelle);
+        File[] tutti = indice.getParentFile().listFiles();
+        if (tutti == null || !indice.isFile()) return null;
+        for (File c : tutti) {
+            if (c.isDirectory() && c.getName().matches("[0-9A-Fa-f]{32}")
+                    && !cartelle.contains(c)) cartelle.add(c);
+        }
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US);
-        File destinazione = new File(new File(cartellaProgramma(), "Backup"), f.format(new Date()));
+        File destinazione = new File(new File(cartellaProgramma(), "Backup"), f.format(new Date()) + "_" + java.util.UUID.randomUUID().toString().substring(0, 8));
         if (!destinazione.mkdirs()) {
             return null;
         }
@@ -752,9 +814,7 @@ public final class ScrittoreSalvataggio {
                 return null;
             }
             File[] contenuto = contenitore.listFiles();
-            if (contenuto == null) {
-                continue;
-            }
+            if (contenuto == null) return null;
             for (int i = 0; i < contenuto.length; i++) {
                 if (contenuto[i].isFile()) {
                     originali.add(contenuto[i]);
@@ -790,42 +850,27 @@ public final class ScrittoreSalvataggio {
             }
             scriviAtomico(new File(destinazione, "backup.txt"), b.toString().getBytes(UTF8));
         } catch (Throwable ignored) {
-            // la nota e' un extra, non blocca
+            return null;
         }
         return destinazione;
     }
 
     /** Rimette a posto i file originali dal backup, durante una scrittura fallita. */
     private static void ripristina(File backup, List<File> cartelle, File indice) {
-        for (int c = 0; c < cartelle.size(); c++) {
-            File contenitore = cartelle.get(c);
+        java.util.List<String> errori = new java.util.ArrayList<String>();
+        for (File contenitore : cartelle) {
             File salvata = new File(backup, contenitore.getName());
-            File[] contenuto = contenitore.listFiles();
-            if (contenuto == null) {
-                continue;
-            }
-            for (int i = 0; i < contenuto.length; i++) {
-                File salvato = new File(salvata, contenuto[i].getName());
-                if (!salvato.isFile()) {
-                    salvato = new File(backup, contenuto[i].getName());
-                }
-                if (contenuto[i].isFile() && salvato.isFile()) {
-                    try {
-                        copia(salvato, contenuto[i]);
-                    } catch (Throwable ignored) {
-                        // si prova a rimettere gli altri
-                    }
-                }
+            File[] contenuto = salvata.listFiles();
+            if (contenuto == null) { errori.add(contenitore.getName()); continue; }
+            for (File salvato : contenuto) if (salvato.isFile()) {
+                try { copia(salvato, new File(contenitore, salvato.getName())); }
+                catch (IOException e) { errori.add(e.getMessage()); }
             }
         }
-        File indiceSalvato = new File(backup, indice.getName());
-        if (indiceSalvato.isFile()) {
-            try {
-                copia(indiceSalvato, indice);
-            } catch (Throwable ignored) {
-                // nulla da fare
-            }
-        }
+        try { copia(new File(backup, indice.getName()), indice); }
+        catch (IOException e) { errori.add(e.getMessage()); }
+        if (!errori.isEmpty()) throw new IllegalStateException("Ripristino incompleto: "
+                + errori + ". Backup disponibile in " + backup.getAbsolutePath());
     }
 
     /**
@@ -851,17 +896,15 @@ public final class ScrittoreSalvataggio {
      * containers.index viene ripristinato e il gioco segue quello, ma nella
      * cartella restano dei file orfani che il gioco non usa piu'.
      */
-    public static Esito ripristina(File backup, File radiceStorage) {
-        if (backup == null || !backup.isDirectory()) {
+    public static synchronized Esito ripristina(File backup, File radiceStorage) {
+        if (backup == null || !backup.isDirectory() || !new File(backup, "backup.txt").isFile()) {
             return Esito.errore("Questo backup non esiste piu'.");
         }
         if (radiceStorage == null || !radiceStorage.isDirectory()) {
             return Esito.errore("La cartella dei salvataggi non e' piu' raggiungibile.");
         }
-        if (giocoInEsecuzione()) {
-            return Esito.errore("No Man's Sky e' in esecuzione. Chiudi il gioco prima di "
-                    + "ripristinare, altrimenti il gioco potrebbe sovrascrivere i file.");
-        }
+        String bloccoGioco = verificaGioco();
+        if (bloccoGioco != null) return Esito.errore(bloccoGioco);
 
         Esito esito = new Esito();
         StringBuilder log = new StringBuilder();
@@ -871,13 +914,16 @@ public final class ScrittoreSalvataggio {
         File[] figli = backup.listFiles();
         if (figli != null) {
             for (int i = 0; i < figli.length; i++) {
-                if (!figli[i].isDirectory()) {
+                if (!figli[i].isDirectory() || !figli[i].getName().matches("[0-9A-Fa-f]{32}")) {
                     continue;
                 }
                 File originale = new File(radiceStorage, figli[i].getName());
                 if (originale.isDirectory()) {
                     daCartelle.add(figli[i]);
                     versoCartelle.add(originale);
+                } else {
+                    return Esito.errore("Un contenitore del backup non esiste nella destinazione. "
+                            + "Ripristino bloccato per non rendere incoerente l'indice Xbox.");
                 }
             }
         }
@@ -889,6 +935,17 @@ public final class ScrittoreSalvataggio {
         }
 
         File indice = new File(radiceStorage, "containers.index");
+        if (!indice.isFile() || !new File(backup, "containers.index").isFile()) {
+            return Esito.errore("Backup Xbox incompleto o piattaforma non compatibile.");
+        }
+        // I backup storici parziali non possono ripristinare in sicurezza l'indice globale.
+        File[] attuali = radiceStorage.listFiles();
+        if (attuali != null) for (File c : attuali) {
+            if (c.isDirectory() && c.getName().matches("[0-9A-Fa-f]{32}")
+                    && !new File(backup,c.getName()).isDirectory()) {
+                return Esito.errore("Il backup non contiene tutti i contenitori. Ripristino automatico bloccato.");
+            }
+        }
 
         File prima = creaBackup(versoCartelle, indice);
         if (prima == null) {
@@ -923,12 +980,14 @@ public final class ScrittoreSalvataggio {
                         .append(": ").append(contenuto.length).append(" file rimessi\n");
             }
         } catch (Throwable t) {
+            ripristina(prima, versoCartelle, indice);
             return Esito.errore("Il ripristino non e' riuscito: " + t
                     + "\n\nLo stato di prima del tentativo e' in:\n" + prima.getAbsolutePath());
         }
 
         SaveLocator.Rilevamento rd = SaveLocator.apri(radiceStorage);
         if (rd == null || rd.storage.bU() == null) {
+            ripristina(prima, versoCartelle, indice);
             return Esito.errore("I file sono stati rimessi a posto ma il salvataggio non si "
                     + "riapre.\n\nLo stato di prima del tentativo e' in:\n"
                     + prima.getAbsolutePath());
@@ -993,7 +1052,8 @@ public final class ScrittoreSalvataggio {
             return out;
         }
         for (int i = 0; i < f.length; i++) {
-            if (f[i].isDirectory() && !f[i].getName().startsWith("_")) {
+            if (f[i].isDirectory() && !f[i].getName().startsWith("_")
+                    && new File(f[i], "backup.txt").isFile()) {
                 out.add(f[i]);
             }
         }
@@ -1020,12 +1080,18 @@ public final class ScrittoreSalvataggio {
      * @return {descrittore, payload}, oppure null se nessuno combacia.
      */
     static File[] trovaContenitore(File radiceStorage, byte[] atteso) {
+        return trovaContenitore(radiceStorage, atteso, java.util.Collections.<File>emptySet());
+    }
+
+    private static File[] trovaContenitore(File radiceStorage, byte[] atteso, java.util.Set<File> esclusi) {
         File[] contenitori = radiceStorage.listFiles();
         if (contenitori == null) {
             return null;
         }
         for (int i = 0; i < contenitori.length; i++) {
-            if (!contenitori[i].isDirectory()) {
+            if (!contenitori[i].isDirectory()
+                    || !contenitori[i].getName().matches("[0-9A-Fa-f]{32}")
+                    || esclusi.contains(contenitori[i])) {
                 continue;
             }
             File[] file = contenitori[i].listFiles();
@@ -1035,12 +1101,12 @@ public final class ScrittoreSalvataggio {
             File descrittore = null;
             File payload = null;
             for (int k = 0; k < file.length; k++) {
-                if (!file[k].isFile() || file[k].getName().startsWith("container.")) {
+                if (!file[k].isFile() || !file[k].getName().matches("[0-9A-Fa-f]{32}")) {
                     continue;
                 }
-                if (file[k].length() < 4096) {
+                if (file[k].length() == 360) {
                     descrittore = file[k];
-                } else {
+                } else if (file[k].length() > 360) {
                     payload = file[k];
                 }
             }
@@ -1069,6 +1135,9 @@ public final class ScrittoreSalvataggio {
                 return false;
             }
         }
+        for (int i = ago.length; i < pagliaio.length; i++) {
+            if (pagliaio[i] != 0 && pagliaio[i] != 10 && pagliaio[i] != 13) return false;
+        }
         return true;
     }
 
@@ -1076,7 +1145,7 @@ public final class ScrittoreSalvataggio {
 
     /** Decomprime un payload LZ4 del gioco. */
     static byte[] decomprimi(File payload) throws IOException {
-        InputStream in = new FileInputStream(payload);
+        InputStream in = new java.io.BufferedInputStream(new FileInputStream(payload), 65536);
         try {
             byte[] testa = new byte[16];
             int letti = 0;
@@ -1160,42 +1229,16 @@ public final class ScrittoreSalvataggio {
     }
 
     static void scriviAtomico(File destinazione, byte[] dati) throws IOException {
-        File temp = new File(destinazione.getParentFile(),
-                destinazione.getName() + ".hub-tmp");
-        OutputStream out = null;
-        try {
-            out = new FileOutputStream(temp);
-            out.write(dati);
-            out.flush();
-        } finally {
-            if (out != null) {
-                out.close();
-            }
-        }
-        if (destinazione.exists() && !destinazione.delete()) {
-            temp.delete();
-            throw new IOException("non riesco a sostituire " + destinazione.getName());
-        }
-        if (!temp.renameTo(destinazione)) {
-            temp.delete();
-            throw new IOException("non riesco a rinominare " + temp.getName());
-        }
+        FileSicuri.scrivi(destinazione, dati);
     }
 
     static void copia(File da, File a) throws IOException {
-        InputStream in = new FileInputStream(da);
-        OutputStream out = new FileOutputStream(a);
-        try {
-            byte[] b = new byte[65536];
-            int n;
-            while ((n = in.read(b)) > 0) {
-                out.write(b, 0, n);
-            }
-        } finally {
-            in.close();
-            out.close();
-        }
+        FileSicuri.scrivi(a, java.nio.file.Files.readAllBytes(da.toPath()));
         a.setLastModified(da.lastModified());
+        String hash = sha256(da);
+        if (hash.isEmpty() || !hash.equals(sha256(a))) {
+            throw new IOException("La copia non supera la verifica SHA-256: " + a.getName());
+        }
     }
 
     static String sha256(File f) {
@@ -1255,6 +1298,27 @@ public final class ScrittoreSalvataggio {
         }
     }
 
+    /** Campo dimensione del record identificato dal GUID Windows del contenitore.
+     * Il GUID è seguito da timestamp (8), riservato (8), dimensione (8).
+     * Non si cercano numeri globalmente: due contenitori possono avere la stessa misura.
+     */
+    static int offsetTotale(byte[] indice, String nome, long atteso) {
+        if (!nome.matches("[0-9A-Fa-f]{32}")) return -1;
+        byte[] guid = new byte[16];
+        for (int i = 0; i < 16; i++) guid[i] = (byte) Integer.parseInt(nome.substring(i*2, i*2+2),16);
+        int[] ordine = {3,2,1,0,5,4,7,6,8,9,10,11,12,13,14,15};
+        int trovato = -1;
+        for (int i = 0; i + 40 <= indice.length; i++) {
+            boolean ok = true;
+            for (int k = 0; k < 16; k++) if (indice[i+k] != guid[ordine[k]]) { ok = false; break; }
+            if (ok) {
+                if (trovato >= 0 || leggiLong(indice,i+32) != atteso) return -1;
+                trovato = i+32;
+            }
+        }
+        return trovato;
+    }
+
     /** Cerca un valore a 8 byte; restituisce l'offset o -1. */
     static int cercaLong(byte[] dati, long valore) {
         for (int i = 0; i + 8 <= dati.length; i++) {
@@ -1281,25 +1345,35 @@ public final class ScrittoreSalvataggio {
 
     /** Rilevamento del gioco in esecuzione (requisito R8). */
     public static boolean giocoInEsecuzione() {
+        return verificaGioco() != null;
+    }
+
+    /** null se chiuso, altrimenti il motivo che impedisce di scrivere. */
+    public static String verificaGioco() {
         Process p = null;
         try {
             p = new ProcessBuilder("tasklist", "/FI", "IMAGENAME eq NMS.exe", "/NH")
                     .redirectErrorStream(true).start();
+            if (!p.waitFor(5, java.util.concurrent.TimeUnit.SECONDS) || p.exitValue() != 0) {
+                registra("Controllo processi Windows non disponibile o scaduto.");
+                return "Controllo dei processi Windows non disponibile. Riprova prima di scrivere.";
+            }
             java.io.BufferedReader r =
                     new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
             String linea;
             while ((linea = r.readLine()) != null) {
                 if (linea.toLowerCase(Locale.ROOT).contains("nms.exe")) {
-                    return true;
+                    return "No Man's Sky è in esecuzione. Chiudi il gioco prima di scrivere.";
                 }
             }
         } catch (Throwable t) {
-            return false;
+            registra("Impossibile controllare il processo di gioco: " + t);
+            return "Non riesco a controllare i processi Windows. Nessuna scrittura eseguita.";
         } finally {
             if (p != null) {
                 p.destroy();
             }
         }
-        return false;
+        return null;
     }
 }

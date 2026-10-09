@@ -76,9 +76,10 @@ public final class Anteprima extends JPanel {
             if (p[2] > maxZ) maxZ = p[2];
         }
 
-        int margine = 30;
+        int margine = Scala.px(24);
         int metaL = (w - margine * 3) / 2;
-        int altezza = h - margine * 2 - 14;
+        int altezza = h - margine * 2 - Scala.px(14);
+        if (metaL < Scala.px(40) || altezza < Scala.px(30)) return;
 
         disegnaVista(g, "Dall'alto", margine, margine + 14, metaL, altezza,
                 parti, pos, minX, maxX, minZ, maxZ, 0, 2);
@@ -110,28 +111,34 @@ public final class Anteprima extends JPanel {
         g.setFont(Scala.font(Font.BOLD, 11));
         g.drawString(titolo, x0 + 10, y0 - 4);
 
-        double spanO = Math.max(1.0, maxX - minX);
-        double spanV = Math.max(1.0, maxV - minV);
+        double spanO = Math.max(6.0, maxX - minX);
+        double spanV = Math.max(6.0, maxV - minV);
         double scala = Math.min((larg - 24) / spanO, (alt - 24) / spanV);
+        double centroO = (minX + maxX) / 2;
+        double centroV = (minV + maxV) / 2;
+        double origineX = x0 + larg / 2.0;
+        double origineY = y0 + alt / 2.0;
 
         // griglia ogni 6 metri, tenue
-        g.setColor(new Color(0x33, 0x33, 0x3C));
+        g.setColor(Theme.BORDO);
         g.setStroke(new BasicStroke(0.5f));
-        for (double v = Math.ceil(minX / 6) * 6; v <= maxX; v += 6) {
-            int px = x0 + 12 + (int) ((v - minX) * scala);
+        double passoO = Math.max(6, spanO / 100);
+        double passoV = Math.max(6, spanV / 100);
+        for (double v = Math.ceil(minX / passoO) * passoO; v <= maxX; v += passoO) {
+            int px = (int)(origineX + (v - centroO) * scala);
             g.drawLine(px, y0 + 12, px, y0 + alt - 12);
         }
-        for (double v = Math.ceil(minV / 6) * 6; v <= maxV; v += 6) {
-            int py = y0 + alt - 12 - (int) ((v - minV) * scala);
+        for (double v = Math.ceil(minV / passoV) * passoV; v <= maxV; v += passoV) {
+            int py = (int)(origineY - (v - centroV) * scala);
             g.drawLine(x0 + 12, py, x0 + larg - 12, py);
         }
 
         // i moduli, dal piu' basso al piu' alto per una sovrapposizione sensata
-        int lato = Math.max(4, (int) (3.0 * scala));
+        int lato = Math.max(Scala.px(4), Math.min(Scala.px(18), (int) (3.0 * scala)));
         for (int i = 0; i < pos.size(); i++) {
             double[] p = pos.get(i);
-            int px = x0 + 12 + (int) ((p[iOriz] - minX) * scala);
-            int py = y0 + alt - 12 - (int) ((p[iVert] - minV) * scala);
+            int px = (int)(origineX + (p[iOriz] - centroO) * scala);
+            int py = (int)(origineY - (p[iVert] - centroV) * scala);
             Color c = Icone.coloreCategoria(CatalogoParti.categoria(parti.get(i)));
             g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 170));
             g.fillRect(px - lato / 2, py - lato / 2, lato, lato);

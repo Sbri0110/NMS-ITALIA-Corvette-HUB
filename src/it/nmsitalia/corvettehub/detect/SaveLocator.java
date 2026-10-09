@@ -91,7 +91,9 @@ public final class SaveLocator {
         if (cartella == null || !cartella.exists() || !cartella.isDirectory()) {
             return null;
         }
-        fq storage = fq.a(cartella, NESSUN_ASCOLTATORE);
+        fq storage;
+        try { storage = fq.a(cartella, NESSUN_ASCOLTATORE); }
+        catch (RuntimeException e) { return null; }
         if (storage == null) {
             return null;
         }
@@ -107,10 +109,11 @@ public final class SaveLocator {
      * sceglie la cartella a mano e il tipo e' gia' noto).
      */
     public static Rilevamento apri(File cartella, String tipo) {
-        if (tipo == null) {
-            return apri(cartella);
-        }
-        fq storage = fq.a(tipo, cartella, NESSUN_ASCOLTATORE);
+        if (cartella == null || !cartella.isDirectory()) return null;
+        if (tipo == null) return apri(cartella);
+        fq storage;
+        try { storage = fq.a(tipo, cartella, NESSUN_ASCOLTATORE); }
+        catch (RuntimeException e) { return apri(cartella); }
         if (storage == null) {
             return apri(cartella);
         }

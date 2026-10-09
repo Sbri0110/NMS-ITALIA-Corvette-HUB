@@ -5,7 +5,7 @@ rem
 rem  Avvio portabile: nessuna installazione, nessuna scrittura nel
 rem  registro di sistema, nessun file fuori da questa cartella,
 rem  tranne CorvetteHUB.conf, Builds, Backup e i log.
-rem  Il tool non contatta mai Internet.
+rem  Il tool lavora localmente; il pulsante Discord apre il browser.
 rem ============================================================
 
 setlocal
@@ -33,6 +33,7 @@ rem  il programma.
 set "JAVA="
 
 if exist "%~dp0jre\bin\java.exe" set "JAVA=%~dp0jre\bin\java.exe"
+if defined JAVA call :verifica
 if not defined JAVA call :cerca "%ProgramFiles%\Java"
 if not defined JAVA call :cerca "%ProgramFiles%\Eclipse Adoptium"
 if not defined JAVA call :cerca "%ProgramFiles%\Microsoft"
@@ -54,7 +55,6 @@ rem  nel file di log, cosi' l'utente vede solo l'interfaccia e chi
 rem  deve aiutarlo ha comunque i messaggi.
 set "LANCIO=%JAVA%"
 for %%J in ("%JAVA%") do if exist "%%~dpJjavaw.exe" set "LANCIO=%%~dpJjavaw.exe"
-if exist "%~dp0jre\bin\javaw.exe" set "LANCIO=%~dp0jre\bin\javaw.exe"
 
 echo avvio del programma con: %LANCIO% >> "%LOG%"
 "%LANCIO%" -Xmx2g -jar "%~dp0NMSITALIA-CorvetteHUB.jar" %* > "%CONSOLE%" 2>&1
@@ -74,11 +74,16 @@ rem ------------------------------------------------------------
 if defined JAVA exit /b 0
 if not exist "%~1" exit /b 0
 for /d %%D in ("%~1\*") do (
-    if not defined JAVA if exist "%%D\bin\java.exe" set "JAVA=%%D\bin\java.exe"
+    if not defined JAVA call :prova "%%D\bin\java.exe"
 )
 if not defined JAVA for /d %%D in ("%~1\*") do (
-    if not defined JAVA if exist "%%D\jre\bin\java.exe" set "JAVA=%%D\jre\bin\java.exe"
+    if not defined JAVA call :prova "%%D\jre\bin\java.exe"
 )
+exit /b 0
+
+:prova
+if not exist "%~1" exit /b 0
+set "JAVA=%~1"
 call :verifica
 exit /b 0
 
@@ -122,7 +127,7 @@ echo      Java, copiala qui accanto a questo file, in modo che
 echo      diventi  jre\bin\java.exe
 echo.
 echo  Non serve installare nulla di strano: il programma non
-echo  tocca il registro di sistema e non contatta Internet.
+echo  tocca il registro di sistema. Discord si apre nel browser.
 echo.
 pause
 endlocal
@@ -149,4 +154,4 @@ echo   %~dp0CorvetteHUB-console.log
 echo.
 pause
 endlocal
-exit /b 0
+exit /b 1

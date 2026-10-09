@@ -177,6 +177,12 @@ public final class EliminazioneCorvette {
             return p;
         }
 
+        if (base.c("UserData", -1) != c.getIndiceNave()
+                || (c.getNodo() instanceof eY && !java.util.Objects.equals(
+                    base.getValueAsString("Name"), ((eY) c.getNodo()).getValueAsString("Name")))) {
+            p.motivo = "La Corvette è cambiata: ricarica il salvataggio.";
+            return p;
+        }
         // --- e' quella in uso?
         int primaria = intero(stato, "PrimaryShip", -1);
         p.inUso = primaria >= 0 && primaria == c.getIndiceNave();
@@ -577,10 +583,10 @@ public final class EliminazioneCorvette {
             }
             int x = intero(v, "X", -1);
             int y = intero(v, "Y", -1);
-            if (x < 0 || y < 0) {
+            if (x < 0 || y < 0 || x >= deposito.c("Width", 10) || y >= deposito.c("Height", 16)) {
                 continue;
             }
-            if (!occupate.contains(x + "," + y)) {
+            if (occupate.add(x + "," + y)) {
                 out.add(new int[]{x, y});
             }
         }
@@ -629,7 +635,7 @@ public final class EliminazioneCorvette {
             return seAssente;
         }
         try {
-            return nodo.J(campo);
+            return nodo.c(campo, seAssente);
         } catch (Throwable t) {
             return seAssente;
         }

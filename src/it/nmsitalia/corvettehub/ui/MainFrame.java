@@ -18,7 +18,7 @@ import java.io.File;
  * Due schermate, non una sola:
  *
  *   1. "salvataggi"  la scelta del salvataggio, senza nulla sulle Corvette;
- *   2. "corvette"    l'hub della Corvette, con le cinque schede.
+ *   2. "corvette"    l'hub della Corvette, con le sette schede.
  *
  * La separazione serve a non mescolare due momenti diversi: prima si decide
  * su quale partita si lavora, poi si lavora.
@@ -68,8 +68,19 @@ public final class MainFrame extends JFrame {
         contenitore.add(schermataCorvette, CARTE_CORVETTE);
         contenitore.setBackground(Theme.SFONDO);
 
-        setContentPane(contenitore);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel shell = new JPanel(new java.awt.BorderLayout());
+        shell.add(new TestataPremium(), java.awt.BorderLayout.NORTH);
+        shell.add(contenitore, java.awt.BorderLayout.CENTER);
+        Theme.rifinisci(shell);
+        setContentPane(shell);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosing(java.awt.event.WindowEvent e) {
+                if (schermataCorvette.puoUscire()) {
+                    dispose(); System.exit(0);
+                }
+            }
+        });
 
         applicaIcona();
 
@@ -87,8 +98,8 @@ public final class MainFrame extends JFrame {
                 Math.min(Scala.px(880), schermo.width - Scala.px(80)),
                 Math.min(Scala.px(560), schermo.height - Scala.px(120))));
         setSize(
-                Math.min(Scala.px(1280), schermo.width - Scala.px(60)),
-                Math.min(Scala.px(820), schermo.height - Scala.px(120)));
+                Math.min(Scala.px(1440), schermo.width - Scala.px(60)),
+                Math.min(Scala.px(920), schermo.height - Scala.px(120)));
         setLocationRelativeTo(null);
     }
 
@@ -112,6 +123,7 @@ public final class MainFrame extends JFrame {
     }
 
     private void mostraSalvataggi() {
+        schermataSalvataggi.ricarica();
         carte.show(contenitore, CARTE_SALVATAGGI);
         setTitle(Main.NOME + " " + Main.VERSIONE + "  ·  scelta del salvataggio");
     }

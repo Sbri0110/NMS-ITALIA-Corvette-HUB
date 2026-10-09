@@ -26,6 +26,8 @@ PIANO.md
 
 # --- output di compilazione -------------------------------------
 build/classes/
+build/*
+!build/MANIFEST.MF
 *.class
 *.hub-tmp
 

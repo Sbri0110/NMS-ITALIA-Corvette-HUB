@@ -107,7 +107,7 @@ public final class SchedaImporta extends JPanel {
         zonaRilascio.setBackground(Theme.SUPERFICIE);
         zonaRilascio.setForeground(Theme.TESTO_TENUE);
         zonaRilascio.setBorder(BorderFactory.createDashedBorder(
-                Theme.BORDO, 8, 5, 1.5f, true));
+                Theme.BORDO, 1, 4, 3, true));
         zonaRilascio.setAlignmentX(Component.LEFT_ALIGNMENT);
         abilitaRilascio();
 
@@ -271,7 +271,7 @@ public final class SchedaImporta extends JPanel {
         }
     }
 
-    private void caricaFile(File f) {
+    public void caricaFile(File f) {
         if (f == null) {
             return;
         }
@@ -289,7 +289,7 @@ public final class SchedaImporta extends JPanel {
         }
         zonaRilascio.setText("Progetto caricato");
         zonaRilascio.setBorder(BorderFactory.createDashedBorder(
-                Theme.OK, 8, 5, 1.5f, true));
+                Theme.OK, 1, 4, 3, true));
 
         StringBuilder b = new StringBuilder();
         b.append("PROGETTO\n\n");
@@ -477,6 +477,7 @@ public final class SchedaImporta extends JPanel {
         final SaveLocator.Rilevamento rl = rilevamento;
         final SaveSlotInfo sl = slot;
 
+        Theme.lavora(this, true);
         new SwingWorker<ScrittoreSalvataggio.Esito, Void>() {
             @Override
             protected ScrittoreSalvataggio.Esito doInBackground() {
@@ -494,7 +495,12 @@ public final class SchedaImporta extends JPanel {
                                 eY base = basi.V(indiceBase);
                                 // SOLO la lista oggetti, e il nome se richiesto.
                                 // Niente altro: nessuno sblocco di parti.
-                                base.b("Objects", oggetti);
+                                if (!"PlayerShipBase".equals(base.getValueAsString("BaseType.PersistentBaseTypes"))
+                                        || base.c("UserData", -1) != destinazione.getIndiceNave()
+                                        || stato.c("PrimaryShip", -1) == destinazione.getIndiceNave()) {
+                                    throw new IllegalStateException("La Corvette è cambiata o è in uso. Ricarica il salvataggio.");
+                                }
+                                base.b("Objects", oggetti.bA());
                                 if (cambiaNome) {
                                     base.b("Name", nomeBuild);
                                 }
@@ -506,6 +512,7 @@ public final class SchedaImporta extends JPanel {
 
             @Override
             protected void done() {
+                Theme.lavora(SchedaImporta.this, false);
                 importa.setEnabled(true);
                 try {
                     ScrittoreSalvataggio.Esito e = get();
@@ -518,6 +525,7 @@ public final class SchedaImporta extends JPanel {
                     }
                     esito.setText(b.toString());
                     esito.setCaretPosition(0);
+                    if (e.riuscito) Theme.dopoScrittura(SchedaImporta.this);
                     if (!e.riuscito) {
                         JOptionPane.showMessageDialog(SchedaImporta.this, e.messaggio,
                                 "Non riuscito", JOptionPane.ERROR_MESSAGE);

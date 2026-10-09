@@ -365,6 +365,7 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
             }
             griglia.add(riga);
         }
+        Theme.rifinisci(griglia);
         griglia.revalidate();
         griglia.repaint();
     }
@@ -431,6 +432,7 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
         salvaInCorso = true;
         avvisaModifiche();
 
+        Theme.lavora(this, true);
         new javax.swing.SwingWorker<ScrittoreSalvataggio.Esito, Void>() {
             @Override
             protected ScrittoreSalvataggio.Esito doInBackground() {
@@ -453,17 +455,18 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
 
             @Override
             protected void done() {
+                Theme.lavora(SchedaDeposito.this, false);
                 salvaInCorso = false;
                 try {
                     ScrittoreSalvataggio.Esito e = get();
                     JOptionPane.showMessageDialog(SchedaDeposito.this,
-                            (e.dettaglio == null ? e.messaggio : e.dettaglio),
+                            (e.dettaglio == null || e.dettaglio.isEmpty() ? e.messaggio : e.dettaglio),
                             e.riuscito ? "Salvato" : "Non riuscito",
                             e.riuscito ? JOptionPane.INFORMATION_MESSAGE
                                     : JOptionPane.ERROR_MESSAGE);
                     if (e.riuscito) {
                         layout = null;
-                        aggiorna(rilevamento, slot, null);
+                        Theme.dopoScrittura(SchedaDeposito.this);
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(SchedaDeposito.this,

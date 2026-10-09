@@ -22,10 +22,12 @@ echo.
 if not exist "%QUI%CorvetteHUB.bat" goto :mancaProgramma
 if not exist "%ICONA%" goto :mancalcona
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$s = (New-Object -ComObject WScript.Shell).CreateShortcut('%DEST%'); $s.TargetPath = '%QUI%CorvetteHUB.bat'; $s.WorkingDirectory = '%QUI%'; $s.IconLocation = '%ICONA%'; $s.Description = 'NMS ITALIA Corvette HUB'; $s.Save()"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; $s = (New-Object -ComObject WScript.Shell).CreateShortcut($env:DEST); $s.TargetPath = Join-Path $env:QUI 'CorvetteHUB.bat'; $s.WorkingDirectory = $env:QUI; $s.IconLocation = $env:ICONA; $s.Description = 'NMS ITALIA Corvette HUB'; $s.Save()"
+if errorlevel 1 goto :erroreCollegamento
 
 if exist "%DEST%" goto :fatto
 
+:erroreCollegamento
 echo  Non sono riuscito a creare il collegamento.
 echo.
 echo  Puoi farlo a mano: tasto destro su CorvetteHUB.bat,

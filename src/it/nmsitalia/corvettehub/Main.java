@@ -17,7 +17,7 @@ import javax.swing.SwingUtilities;
 public final class Main {
 
     public static final String NOME = "NMS ITALIA Corvette HUB";
-    public static final String VERSIONE = "1.1.0";
+    public static final String VERSIONE = "1.2.0";
 
     private Main() {
     }
@@ -28,11 +28,12 @@ public final class Main {
         // La scala va decisa PRIMA del tema e di qualunque componente: i font
         // e le misure vengono costruiti una volta sola.
         Scala.inizializza(config);
-        Theme.installa();
+
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                Theme.installa();
                 MainFrame frame = new MainFrame(config);
                 frame.setVisible(true);
             }

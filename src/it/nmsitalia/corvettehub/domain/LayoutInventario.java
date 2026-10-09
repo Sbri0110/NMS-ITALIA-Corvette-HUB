@@ -83,6 +83,7 @@ public final class LayoutInventario {
 
     /** Legge un inventario. {@code nome} serve solo per l'interfaccia. */
     public static LayoutInventario leggi(eY inventario, String nome) {
+        if (inventario == null) throw new IllegalArgumentException("Inventario assente.");
         int w = 10;
         int h = 12;
         try {
@@ -98,11 +99,15 @@ public final class LayoutInventario {
             h = 12;
         }
 
+        if (w > 100 || h > 100) {
+            throw new IllegalArgumentException("Dimensioni inventario non valide.");
+        }
         boolean[] valide = new boolean[w * h];
         boolean lette = false;
         try {
             eV validi = inventario.d("ValidSlotIndices");
-            if (validi != null && validi.size() > 0) {
+            if (validi != null) {
+                lette = true;
                 for (int i = 0; i < validi.size(); i++) {
                     eY v = validi.V(i);
                     if (v == null) {
@@ -112,7 +117,6 @@ public final class LayoutInventario {
                     int y = v.J("Y");
                     if (x >= 0 && y >= 0 && x < w && y < h) {
                         valide[y * w + x] = true;
-                        lette = true;
                     }
                 }
             }
@@ -144,8 +148,12 @@ public final class LayoutInventario {
                 continue;
             }
             eY idx = v.H("Index");
+            if (idx == null) throw new IllegalArgumentException("Oggetto senza coordinate.");
             int x = idx == null ? 0 : idx.J("X");
             int y = idx == null ? 0 : idx.J("Y");
+            if (!dentro(x,y) || perCella.containsKey(Integer.valueOf(y * larghezza + x))) {
+                throw new IllegalArgumentException("Coordinate inventario duplicate o fuori dalla griglia.");
+            }
             String tipo = "";
             try {
                 eY t = v.H("Type");
@@ -189,7 +197,7 @@ public final class LayoutInventario {
     }
 
     public List<Pezzo> getPezzi() {
-        return pezzi;
+        return Collections.unmodifiableList(pezzi);
     }
 
     public int getNumeroPezzi() {
@@ -293,6 +301,8 @@ public final class LayoutInventario {
      * @return quanti oggetti sono stati spostati in questo modello
      */
     public int applica(eY inventarioFresco) {
+        if (inventarioFresco == null) throw new IllegalStateException("Inventario non presente.");
+        LayoutInventario validitaFresca = leggi(inventarioFresco, nome);
         eV slots = inventarioFresco.d("Slots");
         if (slots == null) {
             throw new IllegalStateException("L'inventario non ha l'elenco Slots.");
@@ -319,6 +329,14 @@ public final class LayoutInventario {
             if (p == null) {
                 throw new IllegalStateException("Nel file c'e' un oggetto in una posizione "
                         + "che non conosco (" + x + "," + y + "): non scrivo nulla.");
+            }
+            if (!java.util.Objects.equals(p.id, v.getValueAsString("Id"))
+                    || p.quantita != v.J("Amount")
+                    || !java.util.Objects.equals(p.tipo, v.getValueAsString("Type.InventoryType"))) {
+                throw new IllegalStateException("L'oggetto nella cella è cambiato. Ricarica il salvataggio.");
+            }
+            if (!valida(p.x, p.y) || !validitaFresca.valida(p.x,p.y)) {
+                throw new IllegalStateException("Cella di destinazione bloccata.");
             }
             nodi.add(v);
             nuove.add(new int[]{p.x, p.y});

@@ -36,7 +36,7 @@ import java.util.TimerTask;
  *
  * Si apre dopo la scelta del salvataggio e sa sempre su quale slot sta
  * lavorando: la barra in alto lo ripete, cosi' non si confonde un salvataggio
- * con un altro. Cinque schede, come da specifica 7.1.
+ * con un altro. Sette schede nella navigazione laterale.
  */
 public final class SchermataCorvette extends JPanel {
 
@@ -66,6 +66,10 @@ public final class SchermataCorvette extends JPanel {
     private JButton salvaModifiche;
     private JButton annullaModifiche;
     private SchedaModificabile schedaAttiva;
+    private int generazione;
+    private boolean occupata;
+    private boolean ripristinoScheda;
+    private final java.util.Map<Component, Boolean> abilitazioni = new java.util.IdentityHashMap<Component, Boolean>();
 
     public SchermataCorvette(File cartellaLibreria, Ascoltatore ascoltatore) {
         this.cartellaLibreria = cartellaLibreria;
@@ -83,7 +87,7 @@ public final class SchermataCorvette extends JPanel {
             public void eliminazioneEseguita() {
                 // la Corvette non esiste piu': tutto quello che e' a schermo va riletto
                 if (rilevamentoCorrente != null && slot != null) {
-                    aggiorna(rilevamentoCorrente, slot);
+                    ricarica();
                 }
             }
         });
@@ -93,6 +97,10 @@ public final class SchermataCorvette extends JPanel {
             public void libreriaCambiata() {
                 schedaDeposito.ricaricaLibreria();
             }
+            @Override public void importaProgetto(File file) {
+                schede.setSelectedComponent(schedaImporta);
+                schedaImporta.caricaFile(file);
+            }
         });
 
         add(costruisciTestata(), BorderLayout.NORTH);
@@ -100,7 +108,7 @@ public final class SchermataCorvette extends JPanel {
         add(costruisciBarraStato(), BorderLayout.SOUTH);
 
         collegaPulsanti();
-        aggiornaStatoGioco();
+        Theme.rifinisci(this);
         avviaControlloGioco();
     }
 
@@ -125,9 +133,9 @@ public final class SchermataCorvette extends JPanel {
         testi.setOpaque(false);
         testi.setLayout(new BoxLayout(testi, BoxLayout.Y_AXIS));
 
-        JLabel titolo = new JLabel(Main.NOME);
+        JLabel titolo = new JLabel("Il tuo hangar");
         titolo.setFont(Theme.titolo());
-        titolo.setForeground(Theme.ACCENTO);
+        titolo.setForeground(Theme.TESTO);
         titolo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         contesto.setFont(Scala.font(Font.PLAIN, 12));
@@ -140,7 +148,7 @@ public final class SchermataCorvette extends JPanel {
         testi.add(contesto);
         testi.add(Box.createVerticalGlue());
 
-        sinistra.add(logo);
+
         sinistra.add(testi);
 
         // I pulsanti per salvare la disposizione dell'inventario stanno qui, in
@@ -186,7 +194,7 @@ public final class SchermataCorvette extends JPanel {
         cambia.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ascoltatore.cambiaSalvataggio();
+                if (puoUscire()) ascoltatore.cambiaSalvataggio();
             }
         });
 
@@ -197,8 +205,12 @@ public final class SchermataCorvette extends JPanel {
         destra.add(ripristina);
         destra.add(cambia);
 
-        p.add(sinistra, BorderLayout.WEST);
-        p.add(destra, BorderLayout.EAST);
+        p.setBackground(Theme.SFONDO);
+        p.setBorder(Scala.bordo(22, 24, 14, 24));
+        p.add(sinistra, BorderLayout.NORTH);
+        destra.setBorder(Scala.bordo(14, 0, 0, 0));
+        ((FlowLayout) destra.getLayout()).setAlignment(FlowLayout.LEFT);
+        p.add(destra, BorderLayout.CENTER);
         return p;
     }
 
@@ -210,37 +222,59 @@ public final class SchermataCorvette extends JPanel {
      * aperto.
      */
     private void collegaPulsanti() {
+        if (schedaAttiva != null) schedaAttiva.setAscoltatoreModifiche(null);
         java.awt.Component sel = schede.getSelectedComponent();
         schedaAttiva = sel instanceof SchedaModificabile ? (SchedaModificabile) sel : null;
         if (schedaAttiva != null) {
             schedaAttiva.setAscoltatoreModifiche(new SchedaModificabile.AscoltatoreModifiche() {
                 @Override
                 public void modificheCambiate(boolean presenti) {
-                    salvaModifiche.setEnabled(presenti);
-                    annullaModifiche.setEnabled(presenti);
+                    if (schede.getSelectedComponent() == schedaAttiva) {
+                        boolean ha = schedaAttiva != null && schedaAttiva.haModifiche();
+                        salvaModifiche.setEnabled(ha && !occupata);
+                        annullaModifiche.setEnabled(ha && !occupata);
+                    }
                 }
             });
         }
         boolean ha = schedaAttiva != null && schedaAttiva.haModifiche();
-        salvaModifiche.setEnabled(ha);
-        annullaModifiche.setEnabled(ha);
+        salvaModifiche.setEnabled(ha && !occupata);
+        annullaModifiche.setEnabled(ha && !occupata);
     }
 
     private JTabbedPane costruisciSchede() {
+        schede.setTabPlacement(JTabbedPane.LEFT);
+        schede.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        schede.putClientProperty("JTabbedPane.tabWidthMode", "equal");
+        schede.putClientProperty("JTabbedPane.minimumTabWidth", Scala.px(166));
         schede.setBackground(Theme.SFONDO);
         schede.setForeground(Theme.TESTO);
         schede.setFont(Scala.font(Font.PLAIN, 13));
-        schede.addTab("Corvette", schedaCorvette);
-        schede.addTab("Importa", schedaImporta);
-        schede.addTab("Esporta", schedaEsporta);
-        schede.addTab("Rinomina", schedaRinomina);
-        schede.addTab("Elimina", schedaElimina);
-        schede.addTab("Deposito", schedaDeposito);
-        schede.addTab("Libreria", schedaLibreria);
+        schede.addTab("Corvette", new Segno("Corvette"), schedaCorvette);
+        schede.addTab("Importa", new Segno("Importa"), schedaImporta);
+        schede.addTab("Esporta", new Segno("Esporta"), schedaEsporta);
+        schede.addTab("Rinomina", new Segno("Rinomina"), schedaRinomina);
+        schede.addTab("Elimina", new Segno("Elimina"), schedaElimina);
+        schede.addTab("Deposito", new Segno("Deposito"), schedaDeposito);
+        schede.addTab("Libreria", new Segno("Libreria"), schedaLibreria);
         // cambiando scheda i pulsanti in alto si ricollegano a quella nuova
         schede.addChangeListener(new javax.swing.event.ChangeListener() {
             @Override
             public void stateChanged(javax.swing.event.ChangeEvent e) {
+                if (ripristinoScheda) return;
+                if (schedaAttiva != null && schedaAttiva != schede.getSelectedComponent()
+                        && schedaAttiva.haModifiche()) {
+                    int scelta = JOptionPane.showConfirmDialog(SchermataCorvette.this,
+                            "Ci sono spostamenti non salvati. Vuoi abbandonarli e cambiare scheda?",
+                            "Modifiche non salvate", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (scelta != JOptionPane.YES_OPTION) {
+                        ripristinoScheda = true;
+                        try { schede.setSelectedComponent((Component) schedaAttiva); }
+                        finally { ripristinoScheda = false; }
+                        return;
+                    }
+                    schedaAttiva.annullaModifiche();
+                }
                 collegaPulsanti();
             }
         });
@@ -295,8 +329,10 @@ public final class SchermataCorvette extends JPanel {
 
     /** Carica lo slot scelto e riempie le schede. */
     public void aggiorna(final SaveLocator.Rilevamento r, final SaveSlotInfo slot) {
+        final int richiesta = ++generazione;
         this.slot = slot;
         this.rilevamentoCorrente = r;
+        setOccupata(true);
         contesto.setText("Slot " + slot.getNumero() + "   ·   " + slot.getModalita()
                 + "   ·   " + r.tipo
                 + "   ·   " + slot.getDataFormattata());
@@ -311,9 +347,14 @@ public final class SchermataCorvette extends JPanel {
             @Override
             protected void done() {
                 try {
+                    if (richiesta != generazione) return;
                     LettoreCorvette.Esito esito = get();
+                    setOccupata(false);
                     if (!esito.ok()) {
                         messaggio.setText(esito.errore);
+                        JOptionPane.showMessageDialog(SchermataCorvette.this, esito.errore,
+                                "Salvataggio non leggibile", JOptionPane.ERROR_MESSAGE);
+                        ascoltatore.cambiaSalvataggio();
                         return;
                     }
                     String autore = slot.getNomeSalvataggio();
@@ -325,11 +366,17 @@ public final class SchermataCorvette extends JPanel {
                     schedaDeposito.aggiorna(r, slot,
                             "Slot " + slot.getNumero() + " · " + slot.getModalita());
                     schedaLibreria.ricarica();
+                    Theme.rifinisci(schede);
+                    collegaPulsanti();
                     messaggio.setText("Slot " + slot.getNumero() + ": "
                             + esito.corvette.size() + " Corvette. "
-                            + "Nave in uso: indice " + esito.naveAttiva + ".");
+                            + (esito.naveAttiva >= 0 ? "Nave in uso protetta." : ""));
                 } catch (Exception e) {
-                    messaggio.setText("Errore nella conversione: " + e.getMessage());
+                    if (richiesta == generazione) {
+                        setOccupata(false);
+                        messaggio.setText("Errore nella conversione: " + e.getMessage());
+                        ascoltatore.cambiaSalvataggio();
+                    }
                 }
             }
         }.execute();
@@ -420,6 +467,7 @@ public final class SchermataCorvette extends JPanel {
         messaggio.setText("Ripristino in corso...");
         final SaveLocator.Rilevamento rl = rilevamentoCorrente;
 
+        Theme.lavora(this, true);
         new SwingWorker<ScrittoreSalvataggio.Esito, Void>() {
             @Override
             protected ScrittoreSalvataggio.Esito doInBackground() {
@@ -429,18 +477,20 @@ public final class SchermataCorvette extends JPanel {
             @Override
             protected void done() {
                 try {
+                    Theme.lavora(SchermataCorvette.this, false);
                     ScrittoreSalvataggio.Esito e = get();
                     messaggio.setText(e.messaggio);
                     JOptionPane.showMessageDialog(SchermataCorvette.this,
-                            (e.dettaglio == null ? e.messaggio : e.dettaglio),
+                            (e.dettaglio == null || e.dettaglio.isEmpty() ? e.messaggio : e.dettaglio),
                             e.riuscito ? "Ripristino eseguito" : "Ripristino non riuscito",
                             e.riuscito ? JOptionPane.INFORMATION_MESSAGE
                                     : JOptionPane.ERROR_MESSAGE);
                     // i dati a schermo non valgono piu': si ricarica tutto
                     if (e.riuscito && slot != null) {
-                        aggiorna(rl, slot);
+                        ricarica();
                     }
                 } catch (Exception ex) {
+                    Theme.lavora(SchermataCorvette.this, false);
                     messaggio.setText("Errore: " + ex.getMessage());
                 }
             }
@@ -456,19 +506,21 @@ public final class SchermataCorvette extends JPanel {
             public void run() {
                 aggiornaStatoGioco();
             }
-        }, 3000, 10000);
+        }, 0, 10000);
     }
 
     private void aggiornaStatoGioco() {
-        final boolean attivo = giocoInEsecuzione();
+        final String problema = ScrittoreSalvataggio.verificaGioco();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (attivo) {
-                    statoGioco.setText("Gioco in esecuzione");
+                if (problema != null) {
+                    statoGioco.setText(problema.contains("in esecuzione") ? "●  Gioco in esecuzione" : "●  Controllo gioco non disponibile");
+                    statoGioco.setToolTipText(problema);
                     statoGioco.setForeground(Theme.AVVISO);
                 } else {
-                    statoGioco.setText("Gioco chiuso");
+                    statoGioco.setText("●  Gioco chiuso · pronto a lavorare");
+                    statoGioco.setToolTipText(null);
                     statoGioco.setForeground(Theme.OK);
                 }
             }
@@ -477,25 +529,69 @@ public final class SchermataCorvette extends JPanel {
 
     /** Rilevamento del gioco in esecuzione (requisito R8). */
     private static boolean giocoInEsecuzione() {
-        Process p = null;
-        try {
-            p = new ProcessBuilder("tasklist", "/FI", "IMAGENAME eq NMS.exe", "/NH")
-                    .redirectErrorStream(true).start();
-            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String linea;
-            while ((linea = r.readLine()) != null) {
-                if (linea.toLowerCase(java.util.Locale.ROOT).contains("nms.exe")) {
-                    return true;
+        return ScrittoreSalvataggio.giocoInEsecuzione();
+    }
+
+    public void ricarica() {
+        if (rilevamentoCorrente == null || slot == null) return;
+        final SaveLocator.Rilevamento precedente = rilevamentoCorrente;
+        final int indice = slot.getIndice();
+        final int richiesta = ++generazione;
+        setOccupata(true);
+        new SwingWorker<SaveLocator.Rilevamento, Void>() {
+            protected SaveLocator.Rilevamento doInBackground() {
+                return SaveLocator.apri(precedente.cartella, precedente.tipo);
+            }
+            protected void done() {
+                if (richiesta != generazione) return;
+                try {
+                    SaveLocator.Rilevamento r = get();
+                    if (r != null) for (nomanssave.ft s : r.storage.bU()) {
+                        if (s != null && s.getIndex() == indice) {
+                            aggiorna(r, new SaveSlotInfo(s));
+                            return;
+                        }
+                    }
+                    throw new IllegalStateException("Lo slot non e' piu' disponibile.");
+                } catch (Exception e) {
+                    setOccupata(false);
+                    JOptionPane.showMessageDialog(SchermataCorvette.this,
+                            "Non riesco a rileggere il salvataggio: " + e.getMessage(),
+                            "Ricaricamento non riuscito", JOptionPane.ERROR_MESSAGE);
+                    ascoltatore.cambiaSalvataggio();
                 }
             }
-        } catch (Exception e) {
-            return false;
-        } finally {
-            if (p != null) {
-                p.destroy();
-            }
+        }.execute();
+    }
+
+    public boolean isOccupata() { return occupata; }
+
+    public boolean puoUscire() {
+        if (occupata) return false;
+        if (schedaCorvette.haModifiche() || schedaDeposito.haModifiche()) {
+            int r = JOptionPane.showConfirmDialog(this,
+                    "Ci sono spostamenti non salvati. Vuoi abbandonarli?",
+                    "Modifiche non salvate", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (r != JOptionPane.YES_OPTION) return false;
+            schedaCorvette.annullaModifiche(); schedaDeposito.annullaModifiche();
         }
-        return false;
+        return true;
+    }
+
+    public void setOccupata(boolean valore) {
+        if (occupata == valore) return;
+        occupata = valore;
+        if (valore) {
+            abilitazioni.clear(); disabilita(this);
+            messaggio.setText("Operazione in corso · backup e verifica dei file…");
+        } else {
+            for (java.util.Map.Entry<Component, Boolean> e : abilitazioni.entrySet()) e.getKey().setEnabled(e.getValue());
+            abilitazioni.clear(); collegaPulsanti(); messaggio.setText("Pronto.");
+        }
+    }
+    private void disabilita(Component c) {
+        abilitazioni.put(c, c.isEnabled()); c.setEnabled(false);
+        if (c instanceof java.awt.Container) for (Component figlio : ((java.awt.Container)c).getComponents()) disabilita(figlio);
     }
 
     public SaveSlotInfo getSlot() {

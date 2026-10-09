@@ -321,6 +321,7 @@ public final class SchedaElimina extends JPanel {
                 + "fa il backup, riscrive e rilegge.");
         esito.setCaretPosition(0);
 
+        Theme.lavora(this, true);
         new javax.swing.SwingWorker<Object[], Void>() {
             @Override
             protected Object[] doInBackground() {
@@ -335,7 +336,7 @@ public final class SchedaElimina extends JPanel {
                     if (oggetti == null || oggetti.size() == 0) {
                         erroreExport = "La Corvette non ha moduli da esportare.";
                     } else {
-                        String quando = new SimpleDateFormat("yyyy-MM-dd HH-mm")
+                        String quando = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss-SSS")
                                 .format(new Date());
                         String nome = c.getNome() + " - eliminata " + quando;
                         File destinazione = new File(cartellaLibreria,
@@ -394,6 +395,7 @@ public final class SchedaElimina extends JPanel {
 
             @Override
             protected void done() {
+                Theme.lavora(SchedaElimina.this, false);
                 elimina.setEnabled(true);
                 try {
                     Object[] r = get();

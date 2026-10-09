@@ -9,7 +9,7 @@ partita** si lavora, poi si lavora.
 solo dove il tool ha trovato i salvataggi e quali slot esistono, con modalità,
 nome, ore giocate e data. Si sceglie lo slot e si preme **Continua**.
 
-**Schermata 2 — Hub della Corvette.** Sette schede:
+**Schermata 2 — Hub della Corvette.** Sette schede nella barra laterale:
 
 | Scheda | Cosa fa |
 |---|---|
@@ -50,13 +50,13 @@ cella è occupata, i due oggetti si scambiano di posto. Le celle che il gioco
 blocca non accettano niente.
 
 Quando sposti qualcosa compare una fascia gialla che dice quanti oggetti hai
-mosso, e **in alto a destra si accendono due pulsanti**: *Salva le modifiche* e
+mosso, e **nella barra dei comandi si accendono due pulsanti**: *Salva le modifiche* e
 *Annulla*. Sono lì e non nella scheda perché le griglie sono alte più di 700
 pixel: messi sotto finirebbero fuori dalla vista. Funzionano con la scheda che
 stai guardando, deposito compreso.
 
 Finché non premi *Salva* non viene scritto niente: puoi provare le disposizioni
-quanto vuoi, e *Annulla* rimette tutto com'era.
+quanto vuoi, e *Annulla* rimette tutto com'era. Prima di cambiare nave, scheda o salvataggio, il programma chiede se vuoi abbandonare gli spostamenti ancora da salvare. Durante una scrittura i comandi restano bloccati.
 
 **Nessun oggetto viene creato o perso.** Spostare significa cambiare la
 *coordinata* dell'oggetto, non toglierlo e rimetterlo: il tool controlla che il

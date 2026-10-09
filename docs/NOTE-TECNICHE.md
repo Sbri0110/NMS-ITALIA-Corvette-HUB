@@ -276,28 +276,34 @@ si possono usare direttamente. Si passa dalle interfacce pubbliche `fq`, `ft`,
 
 ## Compilare dai sorgenti
 
-Serve un JDK (per `javac`/`jar`) e il compilatore `tools/ecj.jar`, che è
-compatibile con Java 8:
+Il compilatore ECJ incluso e il runtime Java 8 bastano. Da PowerShell,
+nella cartella del progetto:
 
-```bash
-JAVA="<percorso-jdk>/bin/java.exe"
-JARX="<percorso-jdk>/bin/jar.exe"
-
-find src -name "*.java" > sources.txt
-echo "src-stub/nomanssave/Application.java" >> sources.txt
-
-"$JAVA" -jar tools/ecj.jar -encoding UTF-8 -source 1.8 -target 1.8 -warn:none \
-  -cp "lib/nms-parser.jar;lib/flatlaf.jar" -d build/classes "@sources.txt"
-
-"$JARX" cfm NMSITALIA-CorvetteHUB.jar build/MANIFEST.MF \
-  -C build/classes . -C . res
+```powershell
+.\tools\compila.ps1
+.\tools\verifica.ps1 -Anteprime
+.\tools\compila.ps1 -Pacchetto
 ```
 
-Il manifest dichiara `Class-Path: lib/nms-parser.jar lib/flatlaf.jar
-lib/nms-icons.jar`: le tre librerie devono restare nella cartella `lib/` accanto
-al JAR.
+La compilazione usa una cartella nuova, include nel JAR soltanto classi e
+risorse e sostituisce il programma dopo aver completato il nuovo archivio.
+Il programma precedente resta nella cartella di compilazione, ignorata da Git.
+Il manifest dichiara le tre librerie della cartella `lib/`.
 
-**Attenzione prima di impacchettare**: se durante una prova il programma è stato
-avviato con la cartella di compilazione come "cartella del programma", dentro
-`build/classes` possono essere finiti `Backup/`, `Builds/` e i log — e il JAR
-diventa enorme. Controlla prima di crearlo.
+Le regressioni standard usano dati sintetici. Per aggiungere i cicli di
+scrittura e ripristino, indica copie dei salvataggi Steam e Xbox:
+
+```powershell
+.\tools\verifica.ps1 -FixtureSteam 'percorso-copia-steam' -FixtureXbox 'percorso-copia-xbox' -Anteprime
+```
+
+Le fixture vengono ulteriormente duplicate dentro `build/test-data/` prima
+che i test scrivano. Il programma verificato e i backup delle prove rimangono
+in una cartella `build/verify-*`. Gli screenshot usano dati sintetici e
+componenti Swing reali, alle scale 100%, 175% e 200%.
+
+Il pacchetto portabile comprende runtime, librerie, risorse e documentazione;
+esclude sorgenti, test, configurazione locale, log, Builds e Backup. Lo
+script genera anche il file SHA-256. Il pacchetto si trova in `dist/`.
+
+Vedi [Revisione 1.2.0](REVISIONE-1.2.0.md) per correzioni, controlli e limiti.

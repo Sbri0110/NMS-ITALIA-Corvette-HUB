@@ -133,7 +133,9 @@ public final class WrapperBuild {
             throw new IOException("File non trovato.");
         }
         byte[] dati = leggiTutto(f);
-        String testo = new String(dati, UTF8);
+        String testo = new String(dati, UTF8).trim();
+        if (testo.startsWith("\ufeff")) testo = testo.substring(1).trim();
+        if (testo.startsWith("[")) testo = "{\"objects\":" + testo + "}";
 
         eY radice;
         try {
@@ -177,6 +179,40 @@ public final class WrapperBuild {
                     + "Attesi i campi 'format' e 'objects'.");
         }
 
+        if (formato != null && !FORMATO.equals(formato)) {
+            throw new IOException("Formato progetto non supportato: " + formato);
+        }
+        if (versione < 0 || versione > VERSIONE) {
+            throw new IOException("Versione progetto non supportata: " + versione);
+        }
+        if (radice.contains("version") && (!(radice.get("version") instanceof Number)
+                || ((Number)radice.get("version")).doubleValue() != versione)) {
+            throw new IOException("La versione del progetto deve essere un intero.");
+        }
+        for (int i = 0; i < oggetti.size(); i++) {
+            eY o;
+            try { o = oggetti.V(i); } catch (RuntimeException e) {
+                throw new IOException("Modulo " + (i + 1) + " non valido.");
+            }
+            if (o == null || o.getValueAsString("ObjectID") == null
+                    || o.getValueAsString("ObjectID").trim().isEmpty()) {
+                throw new IOException("Modulo " + (i + 1) + " senza ObjectID.");
+            }
+            for (String campo : new String[]{"Position", "Up", "At"}) {
+                try {
+                    eV v = o.d(campo);
+                    if (v == null || v.size() != 3) throw new IllegalArgumentException();
+                    for (int k = 0; k < 3; k++) {
+                        double n = v.aa(k);
+                        if (Double.isNaN(n) || Double.isInfinite(n) || Math.abs(n) > 1000000) {
+                            throw new IllegalArgumentException();
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    throw new IOException("Modulo " + (i + 1) + ": vettore " + campo + " non valido.");
+                }
+            }
+        }
         // caso 3: lista grezza
         if (formato == null) {
             formato = "(lista senza wrapper)";
@@ -210,26 +246,7 @@ public final class WrapperBuild {
         }
         String json = radice.bz();
 
-        // scrittura atomica: file temporaneo nella stessa cartella, poi sostituzione
-        File temp = new File(destinazione.getParentFile(), destinazione.getName() + ".tmp");
-        OutputStream out = null;
-        try {
-            out = new FileOutputStream(temp);
-            out.write(json.getBytes(UTF8));
-            out.flush();
-        } finally {
-            if (out != null) {
-                out.close();
-            }
-        }
-        if (destinazione.exists() && !destinazione.delete()) {
-            temp.delete();
-            throw new IOException("Non riesco a sostituire " + destinazione.getName());
-        }
-        if (!temp.renameTo(destinazione)) {
-            temp.delete();
-            throw new IOException("Non riesco a scrivere " + destinazione.getName());
-        }
+        it.nmsitalia.corvettehub.safety.FileSicuri.scrivi(destinazione, json.getBytes(UTF8));
         return oggetti.size();
     }
 
@@ -246,7 +263,11 @@ public final class WrapperBuild {
             s = "build";
         }
         s = s.replaceAll("[\\\\/:*?\"<>|]", "-");
+        s = s.replaceAll("[\\x00-\\x1F\\x7F]", "-");
         s = s.replaceAll("\\s+", " ");
+        s = s.replaceAll("[. ]+$", "");
+        if (s.isEmpty()) s = "build";
+        if (s.matches("(?i)(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\\..*)?")) s = "_" + s;
         if (s.length() > 80) {
             s = s.substring(0, 80).trim();
         }
@@ -292,6 +313,7 @@ public final class WrapperBuild {
     }
 
     private static byte[] leggiTutto(File f) throws IOException {
+        if (f.length() > 32L * 1024 * 1024) throw new IOException("Progetto troppo grande (massimo 32 MB).");
         FileInputStream in = null;
         try {
             in = new FileInputStream(f);
@@ -299,6 +321,7 @@ public final class WrapperBuild {
             byte[] buf = new byte[16384];
             int n;
             while ((n = in.read(buf)) > 0) {
+                if (out.size() + n > 32 * 1024 * 1024) throw new IOException("Progetto troppo grande.");
                 out.write(buf, 0, n);
             }
             return out.toByteArray();

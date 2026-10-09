@@ -60,8 +60,13 @@ public final class SchermataSalvataggi extends JPanel {
     private final JButton continua = new JButton("Continua  \u2192");
 
     private SaveLocator.Rilevamento rilevamento;
+    private int generazione;
 
     public SchermataSalvataggi(AppConfig config, Ascoltatore ascoltatore) {
+        this(config, ascoltatore, true);
+    }
+
+    SchermataSalvataggi(AppConfig config, Ascoltatore ascoltatore, boolean rileva) {
         this.config = config;
         this.ascoltatore = ascoltatore;
         setBackground(Theme.SFONDO);
@@ -69,64 +74,36 @@ public final class SchermataSalvataggi extends JPanel {
         add(costruisciTestata(), BorderLayout.NORTH);
         add(costruisciCorpo(), BorderLayout.CENTER);
         add(costruisciPiede(), BorderLayout.SOUTH);
-        avvia();
+        Theme.rifinisci(this);
+        if (rileva) avvia();
     }
 
     private JPanel costruisciTestata() {
-        JPanel p = new JPanel(new BorderLayout(20, 0));
-        p.setOpaque(false);
-        p.setBorder(Scala.bordo(32, 44, 20, 44));
-
-        JLabel logo = new JLabel();
-        try {
-            logo.setIcon(Icone.logo(Scala.px(96)));
-        } catch (Throwable ignored) {
-            // senza logo la schermata funziona lo stesso
-        }
-
-        JPanel testi = new JPanel();
-        testi.setOpaque(false);
-        testi.setLayout(new BoxLayout(testi, BoxLayout.Y_AXIS));
-
-        JLabel titolo = new JLabel(Main.NOME);
-        titolo.setFont(Scala.font(Font.BOLD, 26));
-        titolo.setForeground(Theme.ACCENTO);
-        titolo.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        sottotitolo.setText("Scegli il salvataggio da usare. Nulla viene modificato "
-                + "in questa fase.");
-        sottotitolo.setFont(Scala.font(Font.PLAIN, 13));
-        sottotitolo.setForeground(Theme.TESTO_TENUE);
-        sottotitolo.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        stato.setFont(Scala.font(Font.PLAIN, 12));
-        stato.setForeground(Theme.TESTO_TENUE);
-        stato.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        testi.add(Box.createVerticalGlue());
-        testi.add(titolo);
-        testi.add(Box.createVerticalStrut(6));
-        testi.add(sottotitolo);
-        testi.add(Box.createVerticalStrut(18));
-        testi.add(stato);
-        testi.add(Box.createVerticalGlue());
-
-        p.add(logo, BorderLayout.WEST);
-        p.add(testi, BorderLayout.CENTER);
+        JPanel p = new JPanel(); p.setOpaque(false);
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setBorder(Scala.bordo(30, 36, 24, 36));
+        JLabel passo = new JLabel("WORKSPACE   /   01 — SALVATAGGIO");
+        passo.setFont(Scala.font(Font.BOLD, 11)); passo.setForeground(Theme.ACCENTO);
+        JLabel titolo = new JLabel("La tua flotta. Un nuovo orizzonte.");
+        titolo.setFont(Scala.font(Font.BOLD, 30)); titolo.setForeground(Theme.TESTO);
+        sottotitolo.setText("Scegli la partita e gestisci le tue Corvette in un unico spazio.");
+        sottotitolo.setForeground(Theme.TESTO_TENUE); sottotitolo.setFont(Scala.font(Font.PLAIN, 14));
+        p.add(passo); p.add(Box.createVerticalStrut(Scala.px(10))); p.add(titolo);
+        p.add(Box.createVerticalStrut(Scala.px(8))); p.add(sottotitolo);
         return p;
     }
 
     private JPanel costruisciCorpo() {
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lista.setCellRenderer(new RendererSlot());
-        lista.setFixedCellHeight(Scala.px(64));
+        lista.setFixedCellHeight(Scala.px(84));
         lista.setBackground(Theme.SUPERFICIE);
         lista.setBorder(Scala.bordo(6, 6, 6, 6));
         lista.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 SaveSlotInfo s = lista.getSelectedValue();
-                boolean utilizzabile = s != null && !s.isVuoto();
+                boolean utilizzabile = s != null && !s.isVuoto() && s.getModello() != null;
                 continua.setEnabled(utilizzabile);
                 if (s != null && s.isVuoto()) {
                     messaggio.setText("Lo slot " + s.getNumero()
@@ -140,22 +117,29 @@ public final class SchermataSalvataggi extends JPanel {
 
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(0, 44, 0, 44));
+        p.setBorder(Scala.bordo(0, 36, 0, 36));
 
         JLabel t = new JLabel("Slot disponibili");
         t.setFont(Theme.sezione());
         t.setForeground(Theme.TESTO_TENUE);
         t.setBorder(Scala.bordo(0, 0, 8, 0));
 
-        p.add(t, BorderLayout.NORTH);
-        p.add(scroll, BorderLayout.CENTER);
+        JPanel elenco = new JPanel(new BorderLayout(0, Scala.px(10))); elenco.setOpaque(false);
+        JPanel testa = new JPanel(new BorderLayout()); testa.setOpaque(false);
+        testa.add(t, BorderLayout.NORTH);
+        stato.setForeground(Theme.TESTO_TENUE); stato.setFont(Scala.font(Font.PLAIN, 11));
+        testa.add(stato, BorderLayout.SOUTH);
+        elenco.add(testa, BorderLayout.NORTH); elenco.add(scroll, BorderLayout.CENTER);
+        p.setLayout(new BorderLayout(Scala.px(24), 0));
+        p.add(new Manifesto(), BorderLayout.WEST);
+        p.add(elenco, BorderLayout.CENTER);
         return p;
     }
 
     private JPanel costruisciPiede() {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(16, 44, 30, 44));
+        p.setBorder(Scala.bordo(22, 36, 28, 36));
 
         messaggio.setForeground(Theme.TESTO_TENUE);
         messaggio.setFont(Scala.font(Font.PLAIN, 12));
@@ -192,37 +176,30 @@ public final class SchermataSalvataggi extends JPanel {
 
     // ------------------------------------------------------------ ricerca
 
+    public void ricarica() { avvia(); }
+
     private void avvia() {
-        String ricordata = config.cartellaSalvataggi();
-        if (ricordata != null) {
-            SaveLocator.Rilevamento r =
-                    SaveLocator.apri(new File(ricordata), config.tipoStorage());
-            if (r != null && SaveLocator.contaSlotPieni(r.storage) > 0) {
-                applica(r, "cartella ricordata");
-                return;
-            }
-        }
+        final int richiesta = ++generazione;
+        modello.clear(); continua.setEnabled(false);
+        stato.setText("Ricerca dei salvataggi…");
         new SwingWorker<SaveLocator.Rilevamento, Void>() {
-            @Override
-            protected SaveLocator.Rilevamento doInBackground() {
+            @Override protected SaveLocator.Rilevamento doInBackground() {
+                String ricordata = config.cartellaSalvataggi();
+                if (ricordata != null) {
+                    SaveLocator.Rilevamento r = SaveLocator.apri(new File(ricordata), config.tipoStorage());
+                    if (r != null && SaveLocator.contaSlotPieni(r.storage) > 0) return r;
+                }
                 return SaveLocator.rileva();
             }
-
-            @Override
-            protected void done() {
+            @Override protected void done() {
+                if (richiesta != generazione) return;
                 try {
                     SaveLocator.Rilevamento r = get();
                     if (r == null) {
-                        stato.setText("Nessun salvataggio trovato.");
-                        messaggio.setText("Non ho trovato i salvataggi di No Man's Sky. "
-                                + "Se il gioco e' installato, indicami la cartella "
-                                + "manualmente: la ricordero'.");
-                        return;
-                    }
-                    applica(r, "rilevamento automatico");
-                } catch (Exception e) {
-                    stato.setText("Rilevamento fallito: " + e.getMessage());
-                }
+                        stato.setText("Nessun salvataggio trovato");
+                        messaggio.setText("Usa Cambia cartella per indicare i tuoi salvataggi.");
+                    } else applica(r, "rilevamento automatico");
+                } catch (Exception e) { stato.setText("Ricerca non riuscita: " + e.getMessage()); }
             }
         }.execute();
     }
@@ -236,7 +213,8 @@ public final class SchermataSalvataggi extends JPanel {
     }
 
     private void caricaSlot(final SaveLocator.Rilevamento r) {
-        modello.clear();
+        final int richiesta = ++generazione;
+        modello.clear(); continua.setEnabled(false);
         new SwingWorker<List<SaveSlotInfo>, Void>() {
             @Override
             protected List<SaveSlotInfo> doInBackground() {
@@ -246,7 +224,9 @@ public final class SchermataSalvataggi extends JPanel {
                     // si elencano SOLO gli slot occupati: mostrare i liberi
                     // riempie la lista di righe inutili
                     if (slots[i] != null && !slots[i].isEmpty()) {
-                        out.add(new SaveSlotInfo(slots[i]));
+                        SaveSlotInfo info = new SaveSlotInfo(slots[i]);
+                        info.getModello(); // Conversione fuori dal renderer e dall'EDT.
+                        out.add(info);
                     }
                 }
                 return out;
@@ -255,6 +235,7 @@ public final class SchermataSalvataggi extends JPanel {
             @Override
             protected void done() {
                 try {
+                    if (richiesta != generazione) return;
                     List<SaveSlotInfo> l = get();
                     for (int i = 0; i < l.size(); i++) {
                         modello.addElement(l.get(i));
@@ -293,7 +274,20 @@ public final class SchermataSalvataggi extends JPanel {
         if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
-        SaveLocator.Rilevamento r = SaveLocator.apri(fc.getSelectedFile());
+        final File scelta = fc.getSelectedFile();
+        final int richiesta = ++generazione;
+        modello.clear(); continua.setEnabled(false); stato.setText("Verifico la cartella…");
+        new SwingWorker<SaveLocator.Rilevamento, Void>() {
+            @Override protected SaveLocator.Rilevamento doInBackground() { return SaveLocator.apri(scelta); }
+            @Override protected void done() {
+                if (richiesta != generazione) return;
+                try { cartellaScelta(get()); }
+                catch (Exception e) { messaggio.setText("Cartella non leggibile: " + e.getMessage()); }
+            }
+        }.execute();
+    }
+
+    private void cartellaScelta(SaveLocator.Rilevamento r) {
         if (r == null) {
             JOptionPane.showMessageDialog(this,
                     "In questa cartella non ho trovato un salvataggio leggibile.\n\n"
@@ -314,7 +308,7 @@ public final class SchermataSalvataggi extends JPanel {
 
         RendererSlot() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            setBorder(Scala.bordo(8, 12, 8, 12));
+            setBorder(Scala.bordo(18, 20, 18, 20));
             riga1.setFont(Scala.font(Font.BOLD, 14));
             riga2.setFont(Scala.font(Font.PLAIN, 12));
             add(riga1);
@@ -333,9 +327,9 @@ public final class SchermataSalvataggi extends JPanel {
                 if (selezionato) {
                     setBackground(Theme.ACCENTO_SCURO);
                     riga1.setForeground(Color.WHITE);
-                    riga2.setForeground(new Color(0xF0, 0xE8, 0xDA));
+                    riga2.setForeground(Theme.TESTO_TENUE);
                 } else {
-                    setBackground(index % 2 == 0 ? Theme.SUPERFICIE : Theme.SUPERFICIE_ALTA);
+                    setBackground(Theme.SUPERFICIE);
                     riga1.setForeground(Theme.TESTO_TENUE);
                     riga2.setForeground(new Color(0x6A, 0x68, 0x72));
                 }
@@ -343,20 +337,20 @@ public final class SchermataSalvataggi extends JPanel {
             }
 
             riga1.setFont(Scala.font(Font.BOLD, 14));
-            riga1.setText("Slot " + s.getNumero() + "   ·   " + s.getModalita());
+            riga1.setText(String.format("%02d   /   %s", s.getNumero(), s.getModalita()));
             String nome = s.getNomeSalvataggio();
             String ore = s.getOreFormattate();
             riga2.setText((nome == null ? "(nome non leggibile)" : nome)
                     + "   ·   " + ore
                     + "   ·   " + s.getDataFormattata()
-                    + "   ·   " + s.getFile().size() + " file");
+);
 
             if (selezionato) {
                 setBackground(Theme.ACCENTO_SCURO);
                 riga1.setForeground(Color.WHITE);
-                riga2.setForeground(new Color(0xF0, 0xE8, 0xDA));
+                riga2.setForeground(Theme.TESTO_TENUE);
             } else {
-                setBackground(index % 2 == 0 ? Theme.SUPERFICIE : Theme.SUPERFICIE_ALTA);
+                setBackground(Theme.SUPERFICIE);
                 riga1.setForeground(Theme.TESTO);
                 riga2.setForeground(Theme.TESTO_TENUE);
             }

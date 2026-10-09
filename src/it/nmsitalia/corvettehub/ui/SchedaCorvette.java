@@ -41,7 +41,7 @@ import java.util.List;
  *   - l'inventario di bordo;
  *   - i depositi montati sulla nave, se ce ne sono.
  *
- * Sola lettura: qui non si modifica niente.
+ * Le statistiche sono in sola lettura; inventario e tecnologie si riordinano.
  */
 public final class SchedaCorvette extends JPanel implements SchedaModificabile {
 
@@ -56,6 +56,8 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
     private LayoutInventario layoutTecnologie;
     private boolean ultimoStatoModifiche;
     private boolean salvaInCorso;
+    private boolean aggiornaScelta;
+    private int navePrecedente = -1;
 
     /** Chi vuole sapere se ci sono spostamenti da salvare. */
     public void setAscoltatoreModifiche(SchedaModificabile.AscoltatoreModifiche a) {
@@ -110,8 +112,23 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         sceltaCorvette.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // cambiando nave si rilegge la disposizione di quella nuova
+                if (aggiornaScelta) return;
+                int nuova = sceltaCorvette.getSelectedIndex();
+                if (nuova == navePrecedente) return;
+                if (haModifiche()) {
+                    int scelta = JOptionPane.showConfirmDialog(SchedaCorvette.this,
+                            "Ci sono spostamenti non salvati. Vuoi abbandonarli e cambiare Corvette?",
+                            "Modifiche non salvate", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (scelta != JOptionPane.YES_OPTION) {
+                        aggiornaScelta = true;
+                        try { sceltaCorvette.setSelectedIndex(navePrecedente); }
+                        finally { aggiornaScelta = false; }
+                        return;
+                    }
+                }
                 layoutInventario = null;
+                layoutTecnologie = null;
+                navePrecedente = nuova;
                 mostra();
             }
         });
@@ -139,13 +156,17 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         this.layoutInventario = null;
         this.layoutTecnologie = null;
 
+        aggiornaScelta = true;
         sceltaCorvette.removeAllItems();
         if (esito == null || esito.corvette.isEmpty()) {
             sceltaCorvette.addItem("(nessuna Corvette)");
             contenuto.removeAll();
             contenuto.add(messaggio("Questo slot non contiene Corvette."));
-            contenuto.revalidate();
+            Theme.rifinisci(contenuto);
+        contenuto.revalidate();
             contenuto.repaint();
+            navePrecedente = 0;
+            aggiornaScelta = false;
             return;
         }
         for (int i = 0; i < esito.corvette.size(); i++) {
@@ -153,6 +174,9 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
             sceltaCorvette.addItem((c.isAttiva() ? "\u26A0 " : "") + c.getNome());
         }
         sceltaCorvette.setSelectedIndex(0);
+        navePrecedente = 0;
+        aggiornaScelta = false;
+        mostra();
     }
 
     private Corvette corvetteScelta() {
@@ -168,7 +192,8 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         Corvette c = corvetteScelta();
         if (c == null || slot == null) {
             contenuto.add(messaggio("Scegli una Corvette."));
-            contenuto.revalidate();
+            Theme.rifinisci(contenuto);
+        contenuto.revalidate();
             contenuto.repaint();
             return;
         }
@@ -184,6 +209,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         contenuto.add(sezione("Depositi montati", pannelloDepositi(st)));
         contenuto.add(Box.createVerticalStrut(16));
 
+        Theme.rifinisci(contenuto);
         contenuto.revalidate();
         contenuto.repaint();
 
@@ -405,6 +431,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
             ascoltatoreModifiche.modificheCambiate(false);
         }
 
+        Theme.lavora(this, true);
         new javax.swing.SwingWorker<ScrittoreSalvataggio.Esito, Void>() {
             @Override
             protected ScrittoreSalvataggio.Esito doInBackground() {
@@ -442,6 +469,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
 
             @Override
             protected void done() {
+                Theme.lavora(SchedaCorvette.this, false);
                 salvaInCorso = false;
                 if (ascoltatoreModifiche != null) {
                     ascoltatoreModifiche.modificheCambiate(haModifiche());
@@ -449,7 +477,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
                 try {
                     ScrittoreSalvataggio.Esito e = get();
                     JOptionPane.showMessageDialog(SchedaCorvette.this,
-                            (e.dettaglio == null ? e.messaggio : e.dettaglio),
+                            (e.dettaglio == null || e.dettaglio.isEmpty() ? e.messaggio : e.dettaglio),
                             e.riuscito ? "Salvato" : "Non riuscito",
                             e.riuscito ? JOptionPane.INFORMATION_MESSAGE
                                     : JOptionPane.ERROR_MESSAGE);
@@ -457,7 +485,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
                         // si rilegge tutto dal modello aggiornato
                         layoutInventario = null;
                         layoutTecnologie = null;
-                        mostra();
+                        Theme.dopoScrittura(SchedaCorvette.this);
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(SchedaCorvette.this,
@@ -486,7 +514,6 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         }
         riga.append("   ·   ").append(st.getModuliTotali()).append(" moduli (")
                 .append(st.getTipiDistinti()).append(" tipi)");
-        riga.append("   ·   nave indice ").append(st.getIndiceNave());
         if (c.isAttiva()) {
             riga.append("   ·   IN USO");
         }
@@ -503,7 +530,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
     }
 
     private JPanel pannelloStatistiche(StatisticheCorvette st) {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        JPanel p = new JPanel(new java.awt.GridLayout(1, 0, Scala.px(12), 0));
         p.setOpaque(false);
 
         List<StatisticheCorvette.Statistica> s = st.getStatistiche();
@@ -550,16 +577,14 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
 
     /** Un riquadro con il numero grande e l'etichetta sotto. */
     private JPanel valore(String etichetta, String numero) {
-        JPanel p = new JPanel();
-        p.setOpaque(true);
+        JPanel p = new Theme.Carta();
         p.setBackground(Theme.SUPERFICIE);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Theme.BORDO),
-                Scala.bordo(8, 16, 8, 16)));
+        p.setBorder(Scala.bordo(18, 20, 18, 20));
+        p.setPreferredSize(Scala.dim(140, 100));
 
         JLabel n = new JLabel(numero);
-        n.setFont(Scala.font(Font.BOLD, 22));
+        n.setFont(Scala.font(Font.BOLD, 28));
         n.setForeground(Theme.ACCENTO);
         n.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -569,6 +594,7 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         e.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         p.add(n);
+        p.add(Box.createVerticalStrut(Scala.px(6)));
         p.add(e);
         return p;
     }
@@ -604,10 +630,17 @@ public final class SchedaCorvette extends JPanel implements SchedaModificabile {
         return p;
     }
 
-    private JLabel testo(String s) {
-        JLabel l = new JLabel("<html><body style='width:900px'>" + s + "</body></html>");
+    private javax.swing.JTextArea testo(String s) {
+        javax.swing.JTextArea l = new javax.swing.JTextArea(s);
+        l.setEditable(false);
+        l.setOpaque(false);
+        l.setLineWrap(true);
+        l.setWrapStyleWord(true);
+        l.setRows(s.length() > 90 ? 2 : 1);
+        l.setColumns(36);
         l.setForeground(Theme.TESTO_TENUE);
         l.setFont(Scala.font(Font.PLAIN, 12));
+        l.setMinimumSize(new Dimension(0, l.getPreferredSize().height));
         return l;
     }
 

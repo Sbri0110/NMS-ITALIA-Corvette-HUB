@@ -85,7 +85,7 @@ public final class AppConfig {
 
     public int limiteBackup() {
         try {
-            return Integer.parseInt(props.getProperty(CHIAVE_LIMITE_BACKUP, "20"));
+            return Math.max(1, Integer.parseInt(props.getProperty(CHIAVE_LIMITE_BACKUP, "20")));
         } catch (NumberFormatException e) {
             return 20;
         }
@@ -115,15 +115,13 @@ public final class AppConfig {
         salva();
     }
 
-    private void salva() {
-        OutputStream out = null;
+    private synchronized void salva() {
         try {
-            out = new FileOutputStream(file);
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
             props.store(out, "NMS ITALIA Corvette HUB - configurazione locale");
+            it.nmsitalia.corvettehub.safety.FileSicuri.scrivi(file, out.toByteArray());
         } catch (IOException e) {
-            // non poter scrivere la configurazione non deve impedire l'uso
-        } finally {
-            chiudi(out);
+            System.err.println("Configurazione non salvata: " + e.getMessage());
         }
     }
 

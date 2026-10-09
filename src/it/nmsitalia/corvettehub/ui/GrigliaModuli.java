@@ -99,7 +99,7 @@ public final class GrigliaModuli extends JPanel {
         this.colonne = colonne;
         this.righe = righeEffettive;
         setOpaque(false);
-        setLayout(new GridLayout(righeEffettive, colonne, 4, 4));
+        setLayout(new GridLayout(righeEffettive, colonne, Scala.px(5), Scala.px(5)));
 
         for (int i = 0; i < righeEffettive * colonne; i++) {
             Cella c = i < voci.size() ? new Cella(voci.get(i)) : new Cella();
@@ -121,7 +121,7 @@ public final class GrigliaModuli extends JPanel {
         this.ascoltatore = ascoltatore;
 
         setOpaque(false);
-        setLayout(new GridLayout(righe, colonne, 4, 4));
+        setLayout(new GridLayout(righe, colonne, Scala.px(5), Scala.px(5)));
 
         for (int y = 0; y < righe; y++) {
             for (int x = 0; x < colonne; x++) {
@@ -144,6 +144,7 @@ public final class GrigliaModuli extends JPanel {
      * ricevono di sicuro, come dimostra il fatto che i tooltip si vedono.
      */
     void premutoSu(Cella c) {
+        if (!isEnabled()) return;
         if (c == null || c.id == null) {
             origine = null;
             return;
@@ -213,6 +214,7 @@ public final class GrigliaModuli extends JPanel {
 
     /** Il rilascio, con la posizione riportata alle coordinate della griglia. */
     void rilasciatoA(java.awt.Point p) {
+        if (!isEnabled()) { pulisci(); return; }
         Cella a = p == null ? null : cellaA(p.x, p.y);
         Cella da = origine;
         pulisci();
@@ -478,7 +480,7 @@ public final class GrigliaModuli extends JPanel {
 
             if (id == null) {
                 g2.setColor(utilizzabile
-                        ? new Color(0x22, 0x22, 0x28) : new Color(0x16, 0x16, 0x1A));
+                        ? Theme.SUPERFICIE : Theme.SFONDO);
                 g2.fillRoundRect(0, 0, w, h, 8, 8);
                 if (bersaglio && utilizzabile) {
                     // dove finirebbe l'oggetto se lo lasciassi qui

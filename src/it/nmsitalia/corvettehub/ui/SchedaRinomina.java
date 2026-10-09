@@ -214,7 +214,7 @@ public final class SchedaRinomina extends JPanel {
                     + c.getNome() + "   (" + c.getNumeroModuli() + " moduli)");
         }
         sceltaCorvette.setSelectedIndex(0);
-        rinomina.setEnabled(true);
+        corvetteScelta();
     }
 
     private Corvette corvetteCorrente() {
@@ -303,7 +303,7 @@ public final class SchedaRinomina extends JPanel {
 
     private void rinominaOra() {
         Corvette c = corvetteCorrente();
-        if (c == null || rilevamento == null || slot == null) {
+        if (c == null || c.isAttiva() || rilevamento == null || slot == null) {
             return;
         }
         final String nuovo = nomeNuovo.getText();
@@ -349,6 +349,7 @@ public final class SchedaRinomina extends JPanel {
         final SaveLocator.Rilevamento rl = rilevamento;
         final SaveSlotInfo sl = slot;
 
+        Theme.lavora(this, true);
         new javax.swing.SwingWorker<ScrittoreSalvataggio.Esito, Void>() {
             @Override
             protected ScrittoreSalvataggio.Esito doInBackground() {
@@ -364,6 +365,11 @@ public final class SchedaRinomina extends JPanel {
                                 eY stato = radice.H("PlayerStateData");
                                 eV basi = stato.d("PersistentPlayerBases");
                                 eY base = basi.V(indiceBase);
+                                if (!"PlayerShipBase".equals(base.getValueAsString("BaseType.PersistentBaseTypes"))
+                                        || base.c("UserData", -1) != indiceNave
+                                        || stato.c("PrimaryShip", -1) == indiceNave) {
+                                    throw new IllegalStateException("La Corvette è cambiata o è in uso. Ricarica il salvataggio.");
+                                }
                                 base.b("Name", nuovo);
                                 if (indiceNave >= 0) {
                                     eV navi = stato.d("ShipOwnership");
@@ -377,7 +383,8 @@ public final class SchedaRinomina extends JPanel {
 
             @Override
             protected void done() {
-                rinomina.setEnabled(true);
+                Theme.lavora(SchedaRinomina.this, false);
+                rinomina.setEnabled(corvetteCorrente() != null && !corvetteCorrente().isAttiva());
                 try {
                     ScrittoreSalvataggio.Esito e = get();
                     StringBuilder b = new StringBuilder();
@@ -392,6 +399,7 @@ public final class SchedaRinomina extends JPanel {
                     }
                     esito.setText(b.toString());
                     esito.setCaretPosition(0);
+                    if (e.riuscito) Theme.dopoScrittura(SchedaRinomina.this);
                     if (!e.riuscito) {
                         JOptionPane.showMessageDialog(SchedaRinomina.this,
                                 e.messaggio, "Non riuscito", JOptionPane.ERROR_MESSAGE);

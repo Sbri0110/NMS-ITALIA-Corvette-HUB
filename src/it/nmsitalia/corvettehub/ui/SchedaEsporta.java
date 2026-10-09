@@ -203,8 +203,8 @@ public final class SchedaEsporta extends JPanel {
         }
         // il costruttore disattiva il pulsante: va riattivato quando i dati
         // arrivano davvero, altrimenti resta grigio per sempre
-        esporta.setEnabled(true);
         sceltaCorvette.setSelectedIndex(0);
+        corvetteScelta();
     }
 
     private Corvette corvetteCorrente() {
@@ -217,6 +217,7 @@ public final class SchedaEsporta extends JPanel {
 
     private void corvetteScelta() {
         Corvette c = corvetteCorrente();
+        esporta.setEnabled(c != null && !c.isAttiva());
         anteprima.mostra(c);
         if (c == null) {
             return;
@@ -243,9 +244,7 @@ public final class SchedaEsporta extends JPanel {
 
     private void esportaOra() {
         Corvette c = corvetteCorrente();
-        if (c == null) {
-            return;
-        }
+        if (c == null || c.isAttiva()) return;
         String nome = nomeBuild.getText().trim();
         if (nome.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Dai un nome alla build.",
@@ -294,6 +293,7 @@ public final class SchedaEsporta extends JPanel {
             b.append("Trovi il progetto nella scheda Libreria, pronto da condividere.");
             esito.setText(b.toString());
             esito.setCaretPosition(0);
+            Theme.dopoScrittura(this);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Errore durante l'esportazione:\n"
                     + e.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);

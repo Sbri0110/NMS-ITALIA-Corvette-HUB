@@ -66,7 +66,7 @@ public final class LettoreCorvette {
         }
 
         try {
-            esito.naveAttiva = stato.J("PrimaryShip");
+            esito.naveAttiva = stato.c("PrimaryShip", -1);
         } catch (Throwable t) {
             esito.naveAttiva = -1;
         }
@@ -115,7 +115,7 @@ public final class LettoreCorvette {
     private static Corvette daBase(int indiceBase, eY base, int naveAttiva) {
         int indiceNave = -1;
         try {
-            indiceNave = base.J("UserData");
+            indiceNave = base.c("UserData", -1);
         } catch (Throwable t) {
             indiceNave = -1;
         }

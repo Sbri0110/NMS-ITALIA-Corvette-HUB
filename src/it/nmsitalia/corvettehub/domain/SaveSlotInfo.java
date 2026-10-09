@@ -100,7 +100,13 @@ public final class SaveSlotInfo {
      * La conversione avviene una sola volta, alla prima richiesta: e' la parte
      * costosa e non serve finche' l'utente non sceglie lo slot.
      */
-    public eY getModello() {
+    public synchronized void invalidaModello() {
+        modelloLetto = false;
+        modello = null;
+        erroreLettura = null;
+    }
+
+    public synchronized eY getModello() {
         if (modelloLetto) {
             return modello;
         }
@@ -170,8 +176,9 @@ public final class SaveSlotInfo {
         if (ore < 0) {
             return "ore non disponibili";
         }
-        long h = (long) ore;
-        long min = Math.round((ore - h) * 60);
+        long minuti = (long) Math.floor(ore * 60 + 0.000001);
+        long h = minuti / 60;
+        long min = minuti % 60;
         return h + " ore e " + min + " minuti";
     }
 
@@ -188,6 +195,14 @@ public final class SaveSlotInfo {
     /** Traduzione delle modalita' di gioco. */
     public static String nomeModalita(fn m) {
         String grezzo = m.name();
+        if ("NORMAL".equals(grezzo)) return "Normale";
+        if ("SURVIVAL".equals(grezzo)) return "Sopravvivenza";
+        if ("CREATIVE".equals(grezzo)) return "Creativa";
+        if ("AMBIENT".equals(grezzo)) return "Ambientale";
+        if ("PERMADEATH".equals(grezzo)) return "Permadeath";
+        if ("EXPEDITION".equals(grezzo)) return "Spedizione";
+        if ("RELAXED".equals(grezzo)) return "Rilassata";
+        if ("CUSTOM".equals(grezzo)) return "Personalizzata";
         // Le costanti dell'enum nel salvataggio sono offuscate: il nome vero
         // arriva da PlayerStateData.DifficultyState.Preset.DifficultyPresetType,
         // che qui non abbiamo. Mostriamo il valore grezzo se non riconosciuto.

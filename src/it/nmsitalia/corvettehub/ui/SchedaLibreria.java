@@ -42,15 +42,14 @@ import java.util.Locale;
  * Scheda Libreria: i progetti salvati nella cartella Builds/.
  *
  * Mostra i progetti con nome, autore, data e numero di moduli, ne disegna
- * l'anteprima e permette di eliminarli con conferma. Il pulsante di
- * importazione arriva con la Fase 3, quando le scritture sul salvataggio
- * saranno implementate e collaudate.
+ * l'anteprima e permette di eliminarli con conferma o aprirli in Importa.
  */
 public final class SchedaLibreria extends JPanel {
 
     /** Chi vuole sapere quando la libreria cambia contenuto. */
     public interface Ascoltatore {
         void libreriaCambiata();
+        default void importaProgetto(File file) { }
     }
 
     private final File cartella;
@@ -160,7 +159,7 @@ public final class SchedaLibreria extends JPanel {
         destra.add(scrollDettaglio, BorderLayout.SOUTH);
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sinistra, destra);
-        split.setDividerLocation(330);
+        split.setDividerLocation(Scala.px(330));
         split.setResizeWeight(0.35);
         split.setBorder(null);
         split.setOpaque(false);
@@ -192,9 +191,13 @@ public final class SchedaLibreria extends JPanel {
         });
 
         JButton importa = new JButton("Importa nel salvataggio...");
+        importa.setToolTipText("Apri il progetto nella scheda Importa");
+        importa.addActionListener(e -> {
+            File f = lista.getSelectedValue();
+            if (f != null && ascoltatore != null) ascoltatore.importaProgetto(f);
+        });
+        lista.addListSelectionListener(e -> importa.setEnabled(lista.getSelectedValue() != null));
         importa.setEnabled(false);
-        importa.setToolTipText("Arriva con la Fase 3, insieme alle scritture protette "
-                + "da backup");
 
         JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         destra.setOpaque(false);
@@ -223,7 +226,8 @@ public final class SchedaLibreria extends JPanel {
                 modello.addElement(tutti.get(i));
             }
         }
-        stato.setText(modello.size() + " progetti in " + cartella.getAbsolutePath());
+        stato.setText(modello.size() + " progetti nella libreria locale");
+        stato.setToolTipText(cartella.getAbsolutePath());
         if (modello.isEmpty()) {
             dettaglio.setText("La libreria e' vuota.\n\n"
                     + "Usa la scheda Esporta per creare il primo progetto da una\n"
@@ -236,6 +240,8 @@ public final class SchedaLibreria extends JPanel {
     private void progettoScelto() {
         File f = lista.getSelectedValue();
         if (f == null) {
+            dettaglio.setText("Scegli un progetto per consultare i dettagli.");
+            anteprima.mostra(null);
             return;
         }
         try {

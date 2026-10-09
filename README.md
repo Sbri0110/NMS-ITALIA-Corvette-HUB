@@ -10,11 +10,11 @@ Applicazione desktop per Windows, dedicata esclusivamente alle Corvette di
 No Man's Sky.
 
 [![Licenza](https://img.shields.io/badge/licenza-Apache%202.0-blue.svg)](LICENSE)
-[![Versione](https://img.shields.io/badge/versione-1.1.0-orange.svg)](../../releases)
+[![Versione](https://img.shields.io/badge/versione-1.2.0-orange.svg)](../../releases)
 [![Piattaforma](https://img.shields.io/badge/piattaforma-Windows-0078D6.svg)](#requisiti)
-[![Discord](https://img.shields.io/badge/Discord-NMS%20ITALIA-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/ZPwrQuATC4)
+[![Discord](https://img.shields.io/badge/Discord-NMS%20ITALIA-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/uvDTR3wRMg)
 
-**[Entra nel Discord di NMS ITALIA](https://discord.gg/ZPwrQuATC4)** ·
+**[Entra nel Discord di NMS ITALIA](https://discord.gg/uvDTR3wRMg)** ·
 [Scarica](../../releases/latest) ·
 [Segnala un problema](../../issues)
 
@@ -31,7 +31,9 @@ No Man's Sky.
 
 ## Cos'è
 
-Un tool che fa cinque cose e nient'altro:
+Un workspace dedicato alla tua flotta, con navigazione laterale, statistiche a schede, anteprime e libreria locale. Il pulsante **Discord NMS ITALIA**, sempre visibile nella testata, apre la community nel browser.
+
+Le funzioni principali:
 
 | | |
 |---|---|
@@ -51,24 +53,24 @@ gioco: se non c'è posto, il tool si ferma e te lo dice invece di allargarla.
 
 ## Screenshot
 
-<img src="docs/img/01-scelta-salvataggio.png" alt="Scelta del salvataggio" width="100%">
+<img src="docs/img/premium/01-salvataggi.png" alt="Scelta del salvataggio" width="100%">
 
-<img src="docs/img/02-corvette.png" alt="Scheda Corvette" width="100%">
+<img src="docs/img/premium/02-corvette.png" alt="Scheda Corvette" width="100%">
 
-<img src="docs/img/07-deposito.png" alt="Deposito dei moduli" width="100%">
+<img src="docs/img/premium/07-deposito.png" alt="Deposito dei moduli" width="100%">
 
-<img src="docs/img/03-importa.png" alt="Importazione di un progetto" width="100%">
+<img src="docs/img/premium/03-importa.png" alt="Importazione di un progetto" width="100%">
 
 <details>
 <summary>Altre schermate</summary>
 
-<img src="docs/img/04-esporta.png" alt="Esportazione" width="100%">
+<img src="docs/img/premium/04-esporta.png" alt="Esportazione" width="100%">
 
-<img src="docs/img/05-rinomina.png" alt="Rinomina" width="100%">
+<img src="docs/img/premium/05-rinomina.png" alt="Rinomina" width="100%">
 
-<img src="docs/img/06-elimina.png" alt="Eliminazione di una Corvette" width="100%">
+<img src="docs/img/premium/06-elimina.png" alt="Eliminazione di una Corvette" width="100%">
 
-<img src="docs/img/08-libreria.png" alt="Libreria dei progetti" width="100%">
+<img src="docs/img/premium/08-libreria.png" alt="Libreria dei progetti" width="100%">
 
 </details>
 
@@ -239,6 +241,6 @@ Questo progetto non è affiliato a Hello Games e non è approvato da Hello Games
 
 <br>
 
-**[Discord di NMS ITALIA](https://discord.gg/ZPwrQuATC4)**
+**[Discord di NMS ITALIA](https://discord.gg/uvDTR3wRMg)**
 
 </div>
