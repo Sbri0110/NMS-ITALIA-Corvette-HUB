@@ -221,12 +221,15 @@ salvataggio di prova la Corvette aveva anche 1464 pezzi di decorazione
 Corvette e spariscono con la base, come quando si elimina una base nel gioco.
 Il piano li conta e li dichiara prima di procedere.
 
-### Perché la Corvette in uso è bloccata
+### Gestione della Corvette selezionata
 
-Se `PrimaryShip` punta alla nave della Corvette, il gioco tiene quella nave in
-memoria e riscrive il salvataggio al momento del salvataggio successivo: la
-modifica andrebbe persa, o peggio il salvataggio resterebbe incoerente. Il tool
-non lo permette.
+`PrimaryShip` non blocca le operazioni: la Corvette selezionata può essere
+gestita fuori dal gioco. Rinomina e Importa conservano la selezione; Esporta
+legge soltanto il modello e aggiorna la libreria senza ricaricare lo slot.
+Elimina sceglie una nave restante con `Resource.Filename` non vuoto e rimappa
+`PrimaryShip`. Se non esiste una nave sostitutiva, non modifica il modello.
+Il controllo del gioco chiuso e il ciclo di backup, scrittura e verifica
+rimangono obbligatori per tutte le scritture.
 
 ---
 
@@ -306,4 +309,6 @@ Il pacchetto portabile comprende runtime, librerie, risorse e documentazione;
 esclude sorgenti, test, configurazione locale, log, Builds e Backup. Lo
 script genera anche il file SHA-256. Il pacchetto si trova in `dist/`.
 
-Vedi [Revisione 1.2.0](REVISIONE-1.2.0.md) per la sicurezza dei salvataggi e [Revisione 1.2.1](REVISIONE-1.2.1.md) per densità e layout adattivi.
+Vedi [Revisione 1.2.0](REVISIONE-1.2.0.md) per la sicurezza dei salvataggi,
+[Revisione 1.2.1](REVISIONE-1.2.1.md) per il layout e
+[Revisione 1.2.2](REVISIONE-1.2.2.md) per la correzione dei comandi.

@@ -35,7 +35,7 @@ import java.util.Date;
  *
  * E' l'operazione piu' distruttiva del tool, e per questo la piu' protetta:
  *
- *   1. la Corvette in uso non si tocca (il gioco la tiene in memoria);
+ *   1. eliminando la Corvette selezionata si sceglie una nave rimasta;
  *   2. il gioco deve essere chiuso;
  *   3. i moduli tornano nel deposito della Stazione, e se non c'e' posto NON
  *      si procede: il deposito ha una capienza fissa e non va allargata;
@@ -254,7 +254,9 @@ public final class SchedaElimina extends JPanel {
         riepilogo.setCaretPosition(0);
 
         if (!piano.possibile) {
-            elimina.setEnabled(false);
+            // Il clic mostra il motivo del blocco, senza avviare la scrittura.
+            elimina.setEnabled(true);
+            elimina.setToolTipText("Premi per conoscere il motivo del blocco");
             avviso.setText("Non si puo' procedere: vedi il messaggio a destra.");
             avviso.setForeground(Theme.AVVISO);
             esito.setText("NON SI PUO' ELIMINARE QUESTA CORVETTE\n\n" + piano.motivo + "\n");
@@ -263,6 +265,7 @@ public final class SchedaElimina extends JPanel {
         }
 
         elimina.setEnabled(true);
+        elimina.setToolTipText("Elimina la Corvette dopo la conferma e il backup");
         StringBuilder b = new StringBuilder();
         b.append("PRONTO PER L'ELIMINAZIONE\n\n");
         b.append("La Corvette \"").append(c.getNome()).append("\" verra' rimossa dal\n");
@@ -307,6 +310,7 @@ public final class SchedaElimina extends JPanel {
         String scritto = JOptionPane.showInputDialog(this,
                 "Sto per ELIMINARE questa Corvette dal salvataggio:\n\n"
                         + "    " + richiesto + "\n\n"
+                        + (piano.inUso ? "La nave selezionata diventerà: " + piano.nomeNaveSostitutiva + ".\n\n" : "")
                         + "I moduli torneranno nel deposito della Stazione.\n"
                         + "La Corvette, e le decorazioni che non sono moduli, spariranno.\n\n"
                         + "Per confermare scrivi il nome della Corvette:",

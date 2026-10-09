@@ -37,8 +37,7 @@ import java.io.File;
  * l'import riusera'.
  *
  * Regole applicate:
- *   - la Corvette in uso non compare nell'elenco (il gioco la ricarica in
- *     memoria e sovrascriverebbe la modifica);
+ *   - anche la Corvette selezionata in partita può essere rinominata;
  *   - il gioco deve essere chiuso;
  *   - backup verificato prima di scrivere, altrimenti ci si ferma;
  *   - si scrivono ENTRAMBI i file dello slot;
@@ -244,13 +243,11 @@ public final class SchedaRinomina extends JPanel {
         b.append("Moduli        : ").append(c.getNumeroModuli()).append('\n');
         b.append("Nave collegata: indice ").append(c.getIndiceNave()).append('\n');
         if (c.isAttiva()) {
-            b.append("\nATTENZIONE: questa e' la Corvette che stai usando in gioco.\n");
-            b.append("Il gioco la ricarica in memoria e potrebbe sovrascrivere la\n");
-            b.append("modifica. Scegline un'altra.\n");
-            rinomina.setEnabled(false);
-        } else {
-            rinomina.setEnabled(true);
+            b.append("\nQuesta è la nave selezionata in partita.\n");
+            b.append("Puoi rinominarla quando il gioco è chiuso.\n");
         }
+        rinomina.setEnabled(true);
+        rinomina.setToolTipText("Rinomina la Corvette selezionata, a gioco chiuso");
         esito.setText(b.toString());
         esito.setCaretPosition(0);
         aggiornaAnteprima();
@@ -309,7 +306,7 @@ public final class SchedaRinomina extends JPanel {
 
     private void rinominaOra() {
         Corvette c = corvetteCorrente();
-        if (c == null || c.isAttiva() || rilevamento == null || slot == null) {
+        if (c == null || rilevamento == null || slot == null) {
             return;
         }
         final String nuovo = nomeNuovo.getText();
@@ -368,21 +365,8 @@ public final class SchedaRinomina extends JPanel {
 
                             @Override
                             public void applica(eY radice) {
-                                eY stato = radice.H("PlayerStateData");
-                                eV basi = stato.d("PersistentPlayerBases");
-                                eY base = basi.V(indiceBase);
-                                if (!"PlayerShipBase".equals(base.getValueAsString("BaseType.PersistentBaseTypes"))
-                                        || base.c("UserData", -1) != indiceNave
-                                        || stato.c("PrimaryShip", -1) == indiceNave) {
-                                    throw new IllegalStateException("La Corvette è cambiata o è in uso. Ricarica il salvataggio.");
-                                }
-                                base.b("Name", nuovo);
-                                if (indiceNave >= 0) {
-                                    eV navi = stato.d("ShipOwnership");
-                                    if (indiceNave < navi.size()) {
-                                        navi.V(indiceNave).b("Name", nuovo);
-                                    }
-                                }
+                                it.nmsitalia.corvettehub.domain.ModificheCorvette.rinomina(
+                                        radice, indiceBase, indiceNave, nuovo);
                             }
                         });
             }
@@ -390,7 +374,7 @@ public final class SchedaRinomina extends JPanel {
             @Override
             protected void done() {
                 Theme.lavora(SchedaRinomina.this, false);
-                rinomina.setEnabled(corvetteCorrente() != null && !corvetteCorrente().isAttiva());
+                rinomina.setEnabled(corvetteCorrente() != null);
                 try {
                     ScrittoreSalvataggio.Esito e = get();
                     StringBuilder b = new StringBuilder();

@@ -117,6 +117,10 @@ public final class Theme {
         while (c != null && !(c instanceof SchermataCorvette)) c = c.getParent();
         if (c instanceof SchermataCorvette) ((SchermataCorvette)c).ricarica();
     }
+    public static void dopoEsportazione(Component c) {
+        while (c != null && !(c instanceof SchermataCorvette)) c = c.getParent();
+        if (c instanceof SchermataCorvette) ((SchermataCorvette)c).aggiornaLibreria();
+    }
     public static void lavora(Component c, boolean occupata) {
         while (c != null && !(c instanceof SchermataCorvette)) c = c.getParent();
         if (c instanceof SchermataCorvette) ((SchermataCorvette)c).setOccupata(occupata);

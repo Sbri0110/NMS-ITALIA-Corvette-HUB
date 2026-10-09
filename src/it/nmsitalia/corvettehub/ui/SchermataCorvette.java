@@ -410,7 +410,7 @@ public final class SchermataCorvette extends JPanel {
                     collegaPulsanti();
                     messaggio.setText("Slot " + slot.getNumero() + ": "
                             + esito.corvette.size() + " Corvette. "
-                            + (esito.naveAttiva >= 0 ? "Nave in uso protetta." : ""));
+                            + "Scritture disponibili a gioco chiuso.");
                 } catch (Exception e) {
                     if (richiesta == generazione) {
                         setOccupata(false);
@@ -636,6 +636,11 @@ public final class SchermataCorvette extends JPanel {
 
     public SaveSlotInfo getSlot() {
         return slot;
+    }
+
+    public void aggiornaLibreria() {
+        schedaLibreria.ricarica();
+        schedaDeposito.ricaricaLibreria();
     }
 
     @Override public void doLayout() {

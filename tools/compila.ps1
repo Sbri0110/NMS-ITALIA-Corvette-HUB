@@ -48,7 +48,7 @@ if ($Pacchetto) {
     $taskZip = Join-Path $taskBuild 'pacchetto.zip'
     $archive = [IO.Compression.ZipFile]::Open($taskZip, [IO.Compression.ZipArchiveMode]::Create)
     try {
-        foreach ($path in @('NMSITALIA-CorvetteHUB.jar','CorvetteHUB.bat','Crea collegamento sul Desktop.bat','LICENSE','NOTICE','README.md','docs\GUIDA-UTENTE.md','docs\NOTE-TECNICHE.md','docs\REVISIONE-1.2.0.md','docs\REVISIONE-1.2.1.md')) {
+        foreach ($path in @('NMSITALIA-CorvetteHUB.jar','CorvetteHUB.bat','Crea collegamento sul Desktop.bat','LICENSE','NOTICE','README.md','docs\GUIDA-UTENTE.md','docs\NOTE-TECNICHE.md','docs\REVISIONE-1.2.0.md','docs\REVISIONE-1.2.1.md','docs\REVISIONE-1.2.2.md')) {
             Add-ArchiveFile $archive (Join-Path $taskRoot $path) $path
         }
         foreach ($path in @('lib','jre','res','docs\img\premium')) {

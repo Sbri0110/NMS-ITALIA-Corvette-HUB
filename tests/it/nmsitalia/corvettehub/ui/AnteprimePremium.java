@@ -137,8 +137,8 @@ public final class AnteprimePremium {
             SchedaEsporta esporta=(SchedaEsporta)tabs.getComponentAt(2);
             SaveSlotInfo attiva=slot(0,attivo);LettoreCorvette.Esito lettura=LettoreCorvette.leggi(attivo);
             rinomina.aggiorna(r,attiva,lettura);esporta.aggiorna(attiva,lettura,"NMS ITALIA");
-            verifica(!((JButton)campo(rinomina,"rinomina")).isEnabled(),"Corvette attiva blocca Rinomina");
-            verifica(!((JButton)campo(esporta,"esporta")).isEnabled(),"Corvette attiva blocca Esporta");
+            verifica(((JButton)campo(rinomina,"rinomina")).isEnabled(),"Corvette attiva consente Rinomina a gioco chiuso");
+            verifica(((JButton)campo(esporta,"esporta")).isEnabled(),"Corvette attiva consente Esporta in sola lettura");
             trova(JComboBox.class,rinomina).setSelectedIndex(1);
             trova(JComboBox.class,esporta).setSelectedIndex(1);
             verifica(((JButton)campo(rinomina,"rinomina")).isEnabled(),"Corvette inattiva abilita Rinomina");

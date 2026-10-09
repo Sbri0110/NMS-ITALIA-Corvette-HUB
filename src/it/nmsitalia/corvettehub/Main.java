@@ -17,7 +17,7 @@ import javax.swing.SwingUtilities;
 public final class Main {
 
     public static final String NOME = "NMS ITALIA Corvette HUB";
-    public static final String VERSIONE = "1.2.1";
+    public static final String VERSIONE = "1.2.2";
 
     private Main() {
     }

@@ -366,14 +366,8 @@ public final class SchedaImporta extends JPanel {
             compatibilita.setText("Scegli prima la Corvette di destinazione.");
             return;
         }
-        if (c.isAttiva()) {
-            importa.setEnabled(false);
-            compatibilita.setText("Questa e' la Corvette che stai usando in gioco.\n\n"
-                    + "Il gioco la ricarica in memoria e sovrascriverebbe la build.\n"
-                    + "Scegline un'altra.");
-            return;
-        }
         importa.setEnabled(true);
+        importa.setToolTipText("Importa il progetto nella Corvette selezionata");
 
         Set<String> richieste = build.getPartiRichieste();
         Compatibilita comp = Compatibilita.calcola(richieste, slot.getModello());
@@ -416,14 +410,6 @@ public final class SchedaImporta extends JPanel {
     private void importaOra() {
         final Corvette destinazione = corvetteScelta();
         if (destinazione == null || build == null || rilevamento == null || slot == null) {
-            return;
-        }
-        if (destinazione.isAttiva()) {
-            JOptionPane.showMessageDialog(this,
-                    "Questa e' la Corvette che stai usando in gioco.\n"
-                            + "Scegline un'altra: il gioco la ricaricherebbe "
-                            + "sovrascrivendo la build.",
-                    "Corvette in uso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (ScrittoreSalvataggio.giocoInEsecuzione()) {
@@ -492,22 +478,8 @@ public final class SchedaImporta extends JPanel {
 
                             @Override
                             public void applica(eY radice) {
-                                eY stato = radice.H("PlayerStateData");
-                                eV basi = stato.d("PersistentPlayerBases");
-                                eY base = basi.V(indiceBase);
-                                // SOLO la lista oggetti, e il nome se richiesto.
-                                // Niente altro: nessuno sblocco di parti.
-                                if (!"PlayerShipBase".equals(base.getValueAsString("BaseType.PersistentBaseTypes"))
-                                        || base.c("UserData", -1) != destinazione.getIndiceNave()
-                                        || stato.c("PrimaryShip", -1) == destinazione.getIndiceNave()) {
-                                    throw new IllegalStateException("La Corvette è cambiata o è in uso. Ricarica il salvataggio.");
-                                }
-                                base.b("Objects", oggetti.bA());
-                                if (cambiaNome) {
-                                    base.b("Name", nomeBuild);
-                                }
-                                base.b("LastUpdateTimestamp",
-                                        Integer.valueOf((int) (System.currentTimeMillis() / 1000L)));
+                                it.nmsitalia.corvettehub.domain.ModificheCorvette.importa(
+                                        radice, indiceBase, destinazione.getIndiceNave(), oggetti, cambiaNome, nomeBuild);
                             }
                         });
             }

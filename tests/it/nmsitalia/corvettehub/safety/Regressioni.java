@@ -150,6 +150,14 @@ public final class Regressioni {
         FileSicuri.scrivi(new File(c,"00112233445566778899AABBCCDDEE01"),ScrittoreSalvataggio.comprimi(grande));
         ok(ScrittoreSalvataggio.trovaContenitore(base,grande)[0].equals(meta),"file non esadecimale ignorato nel rilevamento WGS");
         ok(ScrittoreSalvataggio.trovaContenitore(base,Arrays.copyOf(grande,100))==null,"prefisso payload non basta per scegliere contenitore");
+        // Dati casuali in un campo JSON fanno superare la soglia anche dopo LZ4.
+        StringBuilder random=new StringBuilder();Random casuale=new Random(987);
+        for(int i=0;i<2000;i++)random.append((char)('a'+casuale.nextInt(26)));
+        String modello="{\"x\":1,\"unknown\":\""+random+"\"}";
+        byte[] differente=("{ \"x\" : 1, \"unknown\" : \""+random+"\" }\r\n\u0000").getBytes(StandardCharsets.UTF_8);
+        FileSicuri.scrivi(new File(c,"00112233445566778899AABBCCDDEE01"),ScrittoreSalvataggio.comprimi(differente));
+        ok(ScrittoreSalvataggio.trovaContenitore(base,fj.g(json(modello)))!=null,"WGS riconosce modello completo con diversa formattazione e coda");
+        ok(ScrittoreSalvataggio.trovaContenitore(base,fj.g(json(modello.replace("\"x\":1","\"x\":2"))))==null,"WGS rifiuta un modello con dati differenti");
         ok(Arrays.equals(raw,ScrittoreSalvataggio.decomprimi(fileBytes("lz4.bin",payload))),"round trip compressione LZ4");
         ok(Arrays.equals(ScrittoreSalvataggio.codaOriginale(raw),new byte[]{0}),"coda JSON conservata");
     }

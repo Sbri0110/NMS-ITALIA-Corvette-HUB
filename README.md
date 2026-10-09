@@ -10,7 +10,7 @@ Applicazione desktop per Windows, dedicata esclusivamente alle Corvette di
 No Man's Sky.
 
 [![Licenza](https://img.shields.io/badge/licenza-Apache%202.0-blue.svg)](LICENSE)
-[![Versione](https://img.shields.io/badge/versione-1.2.1-orange.svg)](../../releases)
+[![Versione](https://img.shields.io/badge/versione-1.2.2-orange.svg)](../../releases)
 [![Piattaforma](https://img.shields.io/badge/piattaforma-Windows-0078D6.svg)](#requisiti)
 [![Discord](https://img.shields.io/badge/Discord-NMS%20ITALIA-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/uvDTR3wRMg)
 
@@ -119,8 +119,8 @@ parte importante del programma.
 - Il gioco deve essere **chiuso**: il tool lo controlla e blocca l'operazione.
 - Prima di ogni scrittura viene fatta una **copia di sicurezza verificata con
   SHA-256**. Se la copia non riesce, non viene scritto nulla.
-- La Corvette **in uso** non compare nell'elenco: il gioco la ricarica in
-  memoria e sovrascriverebbe la modifica.
+- Anche la Corvette **selezionata in partita** si può rinominare, importare,
+  esportare ed eliminare. Per le scritture il gioco deve essere chiuso.
 - Dopo la scrittura il file viene **riletto e confrontato byte per byte**. Se
   qualcosa non torna, il tool rimette a posto il backup da solo.
 - **Ripristina backup...** rimette a posto i file da un backup scelto, e prima
@@ -149,8 +149,10 @@ spariscono con la nave, come quando si elimina una base nel gioco. Il tool te
 le conta prima di procedere, e per confermare devi **scrivere il nome della
 Corvette**: un "sì" distratto non basta.
 
-La Corvette che stai usando in gioco non si può eliminare: il gioco la tiene in
-memoria e sovrascriverebbe la modifica. Cambia nave, salva, e riprova.
+Puoi eliminare anche la Corvette selezionata in partita, a gioco chiuso:
+il tool seleziona una delle navi rimaste e la indica prima della conferma.
+Se è l'ultima nave posseduta, l'eliminazione si ferma per non lasciare la
+partita senza una nave. Gli slot vuoti non contano come navi sostitutive.
 
 ---
 

@@ -123,8 +123,9 @@ nulla.
 
 ### Quando non si può
 
-- **La Corvette in uso** non si elimina: il gioco la tiene in memoria e
-  sovrascriverebbe la modifica. Cambia nave in gioco, salva, e riprova.
+- **La Corvette selezionata in partita si può eliminare**: prima della
+  conferma viene indicata la nave che la sostituirà. Se non possiedi
+  un'altra nave, il tool si ferma per proteggere la partita.
 - **Il gioco deve essere chiuso**, come per tutte le scritture.
 - **Il deposito deve avere posto** per tutti i moduli (vedi sopra).
 
@@ -137,7 +138,7 @@ L'eliminazione tocca quattro cose, e nient'altro:
 | `PersistentPlayerBases` | contiene la Corvette | la Corvette non c'è più |
 | `ShipOwnership` | contiene la nave della Corvette | la nave non c'è più |
 | `ShipUsesLegacyColours` | un valore per nave | resta lungo quanto le navi |
-| `PrimaryShip` | indice della nave in uso | **rimappato** se era oltre quella rimossa |
+| `PrimaryShip` | indice della nave selezionata | **rimappato**, oppure sostituito con una nave rimasta se quella selezionata viene eliminata |
 
 E se nel salvataggio ci sono altre Corvette, i loro riferimenti alla nave
 vengono spostati di conseguenza. Dopo la scrittura il tool **rilegge tutto e

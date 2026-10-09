@@ -1115,7 +1115,7 @@ public final class ScrittoreSalvataggio {
             }
             try {
                 byte[] decompresso = decomprimi(payload);
-                if (iniziaCon(decompresso, atteso)) {
+                if (iniziaCon(decompresso, atteso) || stessoModello(decompresso, atteso)) {
                     return new File[]{descrittore, payload};
                 }
             } catch (Throwable t) {
@@ -1123,6 +1123,20 @@ public final class ScrittoreSalvataggio {
             }
         }
         return null;
+    }
+
+    /** Il gioco può serializzare numeri e spazi diversamente dal parser. Confronta
+     * l'intero modello con lo stesso lettore usato per lo slot, mai solo un prefisso. */
+    private static boolean stessoModello(byte[] originale, byte[] atteso) {
+        if (atteso.length == 0 || atteso[0] != '{') return false;
+        int lunghezza = originale.length - codaOriginale(originale).length;
+        try (nomanssave.ff reader = new nomanssave.ff(
+                new java.io.ByteArrayInputStream(originale, 0, lunghezza), 0)) {
+            nomanssave.eY modello = reader.a(nomanssave.eG.jV);
+            return modello != null && java.util.Arrays.equals(atteso, fj.g(modello));
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /** Vero se {@code pagliaio} comincia con tutti i byte di {@code ago}. */

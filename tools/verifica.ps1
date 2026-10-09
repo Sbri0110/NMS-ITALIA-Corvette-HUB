@@ -22,12 +22,26 @@ if ($FixtureSteam) { $fixtureArgs = @($FixtureSteam,$FixtureXbox) }
 $testExit = $LASTEXITCODE
 Get-Content -LiteralPath (Join-Path $taskTest 'regressioni.log') -Tail 16
 if ($testExit -ne 0) { throw "Regressioni fallite. Dettagli in $taskTest\regressioni.log" }
+& $taskJava '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.safety.RegressioniCorvette @fixtureArgs *> (Join-Path $taskTest 'corvette.log')
+$corvetteExit = $LASTEXITCODE
+Get-Content -LiteralPath (Join-Path $taskTest 'corvette.log') -Tail 8
+if ($corvetteExit -ne 0) { throw "Verifica Corvette fallita: $taskTest\corvette.log" }
+& $taskJava '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.ui.RegressioniPulsanti 1 *> (Join-Path $taskTest 'pulsanti-1.log')
+$buttonExit = $LASTEXITCODE
+Get-Content -LiteralPath (Join-Path $taskTest 'pulsanti-1.log') -Tail 8
+if ($buttonExit -ne 0) { throw "Verifica pulsanti fallita: $taskTest\pulsanti-1.log" }
 if ($Anteprime) {
     foreach ($scale in @('1','1.75','2')) {
         & $taskJava '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.ui.RegressioniLayout $scale
         if ($LASTEXITCODE -ne 0) { throw "Verifica componenti layout fallita alla scala $scale" }
         & $taskJava -Xmx2g '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.ui.AnteprimePremium $scale
         if ($LASTEXITCODE -ne 0) { throw "Verifica UI fallita alla scala $scale" }
+        if ($scale -ne '1') {
+            & $taskJava '-Djava.awt.headless=true' -cp $taskClasspath it.nmsitalia.corvettehub.ui.RegressioniPulsanti $scale *> (Join-Path $taskTest "pulsanti-$scale.log")
+            $buttonExit = $LASTEXITCODE
+            Get-Content -LiteralPath (Join-Path $taskTest "pulsanti-$scale.log") -Tail 8
+            if ($buttonExit -ne 0) { throw "Verifica pulsanti fallita alla scala $scale" }
+        }
     }
 }
 Write-Output "Verifiche concluse. Log: $taskTest"

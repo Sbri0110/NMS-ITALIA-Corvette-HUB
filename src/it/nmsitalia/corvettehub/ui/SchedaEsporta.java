@@ -33,8 +33,8 @@ import java.io.File;
  * e la scrive in un nuovo file dentro la libreria. Nessuna scrittura sul
  * salvataggio, quindi nessun backup necessario.
  *
- * La Corvette in uso non compare nell'elenco: esportarla non avrebbe senso,
- * perche' il gioco la ricarica in memoria.
+ * Anche la Corvette in uso è esportabile: questa operazione non scrive nel
+ * salvataggio. Il progetto fotografa l'ultima partita salvata.
  */
 public final class SchedaEsporta extends JPanel {
 
@@ -225,7 +225,7 @@ public final class SchedaEsporta extends JPanel {
 
     private void corvetteScelta() {
         Corvette c = corvetteCorrente();
-        esporta.setEnabled(c != null && !c.isAttiva());
+        esporta.setEnabled(c != null);
         anteprima.mostra(c);
         if (c == null) {
             return;
@@ -241,8 +241,8 @@ public final class SchedaEsporta extends JPanel {
         b.append("Nave collegata: indice ").append(c.getIndiceNave()).append('\n');
         if (c.isAttiva()) {
             b.append("\nQuesta e' la Corvette che stai usando in gioco.\n");
-            b.append("Esportarla e' possibile, ma ricorda che il gioco la\n");
-            b.append("ricarica in memoria: meglio esportarne un'altra.\n");
+            b.append("Puoi esportarla: il salvataggio non viene modificato.\n");
+            b.append("Il progetto contiene i dati dell'ultima partita salvata.\n");
         }
         esito.setText(b.toString());
         esito.setCaretPosition(0);
@@ -252,7 +252,7 @@ public final class SchedaEsporta extends JPanel {
 
     private void esportaOra() {
         Corvette c = corvetteCorrente();
-        if (c == null || c.isAttiva()) return;
+        if (c == null) return;
         String nome = nomeBuild.getText().trim();
         if (nome.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Dai un nome alla build.",
@@ -301,7 +301,7 @@ public final class SchedaEsporta extends JPanel {
             b.append("Trovi il progetto nella scheda Libreria, pronto da condividere.");
             esito.setText(b.toString());
             esito.setCaretPosition(0);
-            Theme.dopoScrittura(this);
+            Theme.dopoEsportazione(this);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Errore durante l'esportazione:\n"
                     + e.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);

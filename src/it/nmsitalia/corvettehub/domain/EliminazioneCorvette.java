@@ -107,6 +107,10 @@ public final class EliminazioneCorvette {
         /** Vero se la Corvette e' quella che il giocatore sta usando. */
         public boolean inUso;
 
+        /** Indice prima della rimozione della nave che sostituirà quella selezionata. */
+        public int naveSostitutiva = -1;
+        public String nomeNaveSostitutiva;
+
         /** Nome della Corvette, come lo mostra il gioco. */
         public String nome;
 
@@ -120,6 +124,9 @@ public final class EliminazioneCorvette {
         public String riepilogo() {
             StringBuilder b = new StringBuilder();
             b.append("Corvette          : ").append(nome).append('\n');
+            if (inUso && naveSostitutiva >= 0) {
+                b.append("Nuova nave selezionata: ").append(nomeNaveSostitutiva).append('\n');
+            }
             b.append("Pezzi costruiti   : ").append(pezziTotali).append('\n');
             b.append("  moduli Corvette : ").append(moduliCorvette)
                     .append("  (").append(tipiCorvette).append(" tipi)\n");
@@ -186,11 +193,30 @@ public final class EliminazioneCorvette {
         // --- e' quella in uso?
         int primaria = intero(stato, "PrimaryShip", -1);
         p.inUso = primaria >= 0 && primaria == c.getIndiceNave();
-        if (p.inUso) {
-            p.motivo = "Questa e' la Corvette che stai usando in gioco.\n\n"
-                    + "Il gioco la tiene in memoria e sovrascriverebbe la modifica.\n"
-                    + "Cambia nave nel gioco, salva, e riprova.";
+        eV navi = array(stato, "ShipOwnership");
+        if (navi == null || c.getIndiceNave() < 0 || c.getIndiceNave() >= navi.size()
+                || navi.V(c.getIndiceNave()) == null) {
+            p.motivo = "La nave della Corvette non è più al suo posto: ricarica il salvataggio.";
             return p;
+        }
+        if (p.inUso) {
+            for (int i = 0; i < navi.size(); i++) {
+                eY nave = navi.V(i);
+                if (i == c.getIndiceNave() || nave == null) continue;
+                String modello = nave.getValueAsString("Resource.Filename");
+                if (modello != null && !modello.trim().isEmpty()) {
+                    p.naveSostitutiva = i;
+                    p.nomeNaveSostitutiva = nave.getValueAsString("Name");
+                    if (p.nomeNaveSostitutiva == null || p.nomeNaveSostitutiva.trim().isEmpty())
+                        p.nomeNaveSostitutiva = "Nave " + (i + 1);
+                    break;
+                }
+            }
+            if (p.naveSostitutiva < 0) {
+                p.motivo = "Questa è l'ultima nave posseduta. Non posso eliminarla lasciando\n"
+                        + "la partita senza una nave. Ottieni prima un'altra nave in gioco.";
+                return p;
+            }
         }
 
         // --- conta i pezzi per tipo
@@ -325,7 +351,11 @@ public final class EliminazioneCorvette {
 
         // ---- 5. l'indice della nave in uso si sposta
         int primaria = intero(stato, "PrimaryShip", -1);
-        if (primaria > c.getIndiceNave()) {
+        if (p.inUso) {
+            int nuovaPrimaria = p.naveSostitutiva > c.getIndiceNave()
+                    ? p.naveSostitutiva - 1 : p.naveSostitutiva;
+            stato.b("PrimaryShip", Integer.valueOf(nuovaPrimaria));
+        } else if (primaria > c.getIndiceNave()) {
             stato.b("PrimaryShip", Integer.valueOf(primaria - 1));
         }
 
