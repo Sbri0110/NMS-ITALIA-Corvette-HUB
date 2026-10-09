@@ -26,6 +26,11 @@ In alto resta sempre scritto su quale slot si sta lavorando, e il pulsante
 **Cambia salvataggio** riporta alla prima schermata. Nelle finestre strette
 lo trovi nel menu **Azioni...**, insieme a **Ripristina backup...**.
 
+I quattro comandi sono allineati a destra nella testata, accanto alle
+informazioni dello slot. La finestra si può ridimensionare fino a
+**1000 × 680 a scala 100%**; il minimo segue la scala DPI e viene limitato
+allo spazio dello schermo.
+
 ---
 
 ## La scheda Corvette

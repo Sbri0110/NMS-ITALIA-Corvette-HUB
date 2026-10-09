@@ -19,6 +19,7 @@ import javax.swing.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -137,6 +138,7 @@ public final class SchermataCorvette extends JPanel {
         JPanel sinistra = new JPanel();
         pannelloContesto = sinistra;
         sinistra.setOpaque(false);
+        sinistra.setMinimumSize(Scala.dim(0,0));
         sinistra.setLayout(new BoxLayout(sinistra, BoxLayout.X_AXIS));
 
         JLabel logo = new JLabel();
@@ -149,6 +151,7 @@ public final class SchermataCorvette extends JPanel {
 
         JPanel testi = new JPanel();
         testi.setOpaque(false);
+        testi.setMinimumSize(Scala.dim(0,0));
         testi.setLayout(new BoxLayout(testi, BoxLayout.Y_AXIS));
 
         JLabel titolo = titoloHangar;
@@ -159,6 +162,7 @@ public final class SchermataCorvette extends JPanel {
         contesto.setFont(Scala.font(Font.PLAIN, 12));
         contesto.setForeground(Theme.TESTO_TENUE);
         contesto.setAlignmentX(Component.LEFT_ALIGNMENT);
+        contesto.setMinimumSize(Scala.dim(0,0));
 
         testi.add(Box.createVerticalGlue());
         testi.add(titolo);
@@ -216,7 +220,18 @@ public final class SchermataCorvette extends JPanel {
             }
         });
 
-        JPanel destra = new JPanel(new LayoutFluido(Scala.px(6), Scala.px(4)));
+        JPanel destra = new JPanel(new FlowLayout(FlowLayout.RIGHT,Scala.px(6),0)) {
+            @Override public void doLayout() {
+                super.doLayout();
+                if(modoComandi!=2) {
+                    java.awt.Insets in=getInsets();
+                    int disponibile=getHeight()-in.top-in.bottom;
+                    for(Component c:getComponents()) if(c.isVisible()) {
+                        c.setLocation(c.getX(),in.top+Math.max(0,(disponibile-c.getHeight())/2));
+                    }
+                }
+            }
+        };
         barraComandi=destra;
         destra.setOpaque(false);
         destra.add(salvaModifiche);
@@ -234,9 +249,8 @@ public final class SchermataCorvette extends JPanel {
 
         p.setBackground(Theme.SFONDO);
         p.setBorder(Scala.bordo(12, 16, 8, 16));
-        p.add(sinistra, BorderLayout.NORTH);
-        destra.setBorder(Scala.bordo(8, 0, 0, 0));
-        p.add(destra, BorderLayout.CENTER);
+        p.add(sinistra, BorderLayout.CENTER);
+        p.add(destra, BorderLayout.EAST);
         return p;
     }
 
@@ -643,11 +657,14 @@ public final class SchermataCorvette extends JPanel {
             modoComandi=modo;
             salvaModifiche.setText(compatto?"Salva":"Salva le modifiche");
             testata.setBorder(compatto?Scala.bordo(6,12,6,12):Scala.bordo(12,16,8,16));
-            barraComandi.setBorder(Scala.bordo(compatto?(modifiche?4:0):8,0,0,0));
+            barraComandi.setBorder(Scala.bordo(modo==2?4:0,0,0,0));
+            barraComandi.setLayout(modo==2
+                    ?new LayoutFluido(Scala.px(6),Scala.px(4))
+                    :new FlowLayout(FlowLayout.RIGHT,Scala.px(6),0));
             testata.removeAll();
             testata.setLayout(new BorderLayout(Scala.px(12),0));
-            testata.add(pannelloContesto,modo==1?BorderLayout.CENTER:BorderLayout.NORTH);
-            testata.add(barraComandi,modo==1?BorderLayout.EAST:BorderLayout.CENTER);
+            testata.add(pannelloContesto,modo==2?BorderLayout.NORTH:BorderLayout.CENTER);
+            testata.add(barraComandi,modo==2?BorderLayout.CENTER:BorderLayout.EAST);
         }
         if(slot!=null) {
             String testo=compatto?"Slot "+slot.getNumero()+" · "+slot.getModalita()+" · "+rilevamentoCorrente.tipo:contestoCompleto;

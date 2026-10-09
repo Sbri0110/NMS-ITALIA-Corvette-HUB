@@ -15,6 +15,8 @@ protezioni dei salvataggi della revisione precedente.
   di altezza, disposte su più righe quando serve. Nessun allungamento a
   rettangoli per riempire la finestra.
 - Pulsanti, testata, selezione della partita e navigazione più compatti.
+  I quattro comandi della testata sono allineati a destra, accanto alle
+  informazioni dello slot, senza una riga separata nelle finestre ampie.
   La navigazione passa in alto nelle finestre strette. I comandi secondari
   sono nel menu **Azioni...**; Salva e Annulla compaiono quando ci sono
   modifiche da salvare.
@@ -31,7 +33,8 @@ protezioni dei salvataggi della revisione precedente.
   e i dettagli completi restano disponibili nel suggerimento.
 - La barra di stato riserva spazio ai due messaggi e accorcia i testi lunghi
   senza sovrapporli. La finestra conserva un'altezza minima utile anche al
-  DPI alto, entro i limiti dello schermo.
+  DPI alto: **1000 × 680 a scala 100%**, adattati alla scala e limitati
+  allo spazio dello schermo.
 
 ## Verifica del ridimensionamento
 
