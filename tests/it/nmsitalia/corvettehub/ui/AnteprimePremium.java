@@ -60,16 +60,49 @@ public final class AnteprimePremium {
             if(i==2)continue;
             eY base=new eY(),tipo=new eY();tipo.b("PersistentBaseTypes","PlayerShipBase");base.b("BaseType",tipo);
             base.b("Name",i==0?"Aurora":"Orizzonte");base.b("UserData",i);
-            base.b("Position",new eV(0,0,0));eV objects=new eV();
+            base.b("Position",new eV(0,0,0));            eV objects=new eV();
             for(int z=0;z<9;z++)for(int x=0;x<5;x++){
                 if(Math.abs(x-2)>Math.min(2,z/2))continue;
                 eY object=new eY();object.b("ObjectID",z==0?"^B_COK_A":"^B_HAB_A");
                 object.b("Position",new eV(x*6,0,z*6));object.b("Up",new eV(0,1,0));object.b("At",new eV(0,0,1));objects.add(object);
             }
+            // Due contenitori di deposito montati, con il loro inventario.
+            //
+            // Stanno sulla Corvette dell'indice 1, NON sulla 0: i contenitori
+            // hanno un ObjectID che non comincia con ^B_, quindi il deposito
+            // della Stazione non li accetta quando la Corvette viene demolita
+            // (esattamente come le decorazioni). RegressioniCorvette demolisce
+            // proprio la Corvette 0 e confronta i moduli restituiti al
+            // deposito: se i contenitori stessero li', il conto non tornerebbe
+            // e la prova fallirebbe per un motivo che non c'entra nulla con
+            // l'eliminazione. Sulla Corvette 1 la sezione "Depositi montati"
+            // si vede lo stesso, perche' mostra la Corvette selezionata.
+            if(i==1){
+                for(int k=0;k<2;k++){
+                    eY object=new eY();object.b("ObjectID","^CONTAINER"+k);
+                    object.b("Position",new eV(20+k*6,0,4));object.b("Up",new eV(0,1,0));object.b("At",new eV(0,0,1));objects.add(object);
+                }
+            }
             base.b("Objects",objects);basi.add(base);
         }
         stato.b("ShipOwnership",navi);stato.b("PersistentPlayerBases",basi);
-        stato.b("ShipUsesLegacyColours",new eV(false,false,false));stato.b("CorvetteStorageInventory",inventario(10,6,false));
+        // gli inventari dei due contenitori montati: il primo con roba dentro
+        eY chest1=inventario(10,6,false), chest2=inventario(10,6,false);
+        eV vuoto=new eV();
+        chest2.b("Slots",vuoto);
+        stato.b("Chest1Inventory",chest1);stato.b("Chest2Inventory",chest2);
+        stato.b("ShipUsesLegacyColours",new eV(false,false,false));
+        // Il deposito della Stazione: intestazione 10 x 16 come nel gioco, con
+        // abbastanza celle valide da accogliere i moduli di una Corvette intera
+        // quando viene eliminata. Serve a RegressioniCorvette, che riversa una
+        // Corvette demolita proprio qui: se le celle fossero solo 60 il
+        // riversamento si fermerebbe a meta'.
+        eY depositoStazione=inventario(10,6,false);
+        depositoStazione.b("Height",16);
+        eV valide=new eV();
+        for(int y=0;y<16;y++)for(int x=0;x<10;x++){eY i=new eY();i.b("X",x);i.b("Y",y);valide.add(i);}
+        depositoStazione.b("ValidSlotIndices",valide);
+        stato.b("CorvetteStorageInventory",depositoStazione);
         stato.b("KnownProducts",new eV("^B_COK_A","^B_HAB_A")); return root;
     }
     private static SaveSlotInfo slot(final int indice,final eY m) {

@@ -79,7 +79,7 @@ public final class SchedaLibreria extends JPanel {
     private Component costruisciCorpo() {
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lista.setCellRenderer(new RendererProgetto());
-        lista.setFixedCellHeight(Scala.px(46));
+        Theme.altezzaRiga(lista, 32);
         lista.setBackground(Theme.SUPERFICIE);
         lista.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -123,7 +123,7 @@ public final class SchedaLibreria extends JPanel {
         t.setAlignmentX(Component.LEFT_ALIGNMENT);
         testaSinistra.setAlignmentX(Component.LEFT_ALIGNMENT);
         titolo.add(t);
-        titolo.add(Box.createVerticalStrut(6));
+        titolo.add(Box.createVerticalStrut(4));
         titolo.add(testaSinistra);
 
         JScrollPane scrollLista = new JScrollPane(lista);
@@ -131,7 +131,7 @@ public final class SchedaLibreria extends JPanel {
 
         sinistra.add(titolo, BorderLayout.NORTH);
         sinistra.add(scrollLista, BorderLayout.CENTER);
-        sinistra.setBorder(Scala.bordo(10, 12, 0, 6));
+        sinistra.setBorder(Scala.bordo(6, 12, 0, 6));
         sinistra.setMinimumSize(Scala.dim(0, 0));
 
         dettaglio.setEditable(false);
@@ -169,12 +169,12 @@ public final class SchedaLibreria extends JPanel {
     }
 
     private JPanel costruisciPiede() {
-        JPanel p = new JPanel(new BorderLayout(0,Scala.px(4)));
+        JPanel p = new JPanel(new BorderLayout(0,Scala.px(3)));
         p.setOpaque(false);
-        p.setBorder(Scala.bordo(6, 12, 8, 12));
+        p.setBorder(Scala.bordo(4, 12, 5, 12));
 
         stato.setForeground(Theme.TESTO_TENUE);
-        stato.setFont(Scala.font(Font.PLAIN, 12));
+        stato.setFont(Theme.corpo());
 
         apri = new JButton("Apri cartella");
         apri.addActionListener(new ActionListener() {
@@ -386,9 +386,9 @@ public final class SchedaLibreria extends JPanel {
         RendererProgetto() {
             super(new BorderLayout());
             setOpaque(true);
-            setBorder(Scala.bordo(6, 12, 6, 12));
-            nomeProgetto.setFont(Scala.font(Font.BOLD,12));
-            metadati.setFont(Scala.font(Font.PLAIN,10));
+            setBorder(Scala.bordo(4, 12, 4, 12));
+            nomeProgetto.setFont(Scala.font(Font.BOLD,11));
+            metadati.setFont(Theme.etichetta());
             add(nomeProgetto,BorderLayout.NORTH);
             add(metadati,BorderLayout.SOUTH);
         }

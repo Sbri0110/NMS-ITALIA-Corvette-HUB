@@ -15,7 +15,6 @@ import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -691,15 +690,17 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
                     "Niente da esportare", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Salva l'elenco del deposito");
-        fc.setSelectedFile(new File("deposito-corvette.csv"));
-        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+        File cartella = new File(it.nmsitalia.corvettehub.safety.ScrittoreSalvataggio.cartellaProgramma(),
+                "Esportazioni");
+        if (!cartella.isDirectory()) cartella = new File(".");
+        File destinazione = SelettoreFile.salva(this, "Salva l'elenco del deposito",
+                cartella, "deposito-corvette.csv");
+        if (destinazione == null) {
             return;
         }
         Writer w = null;
         try {
-            w = new OutputStreamWriter(new FileOutputStream(fc.getSelectedFile()),
+            w = new OutputStreamWriter(new FileOutputStream(destinazione),
                     Charset.forName("UTF-8"));
             w.write("Id;Categoria;Quantita'\n");
             for (int i = 0; i < voci.size(); i++) {
@@ -708,7 +709,7 @@ public final class SchedaDeposito extends JPanel implements SchedaModificabile {
             }
             w.flush();
             JOptionPane.showMessageDialog(this,
-                    "Elenco esportato in:\n" + fc.getSelectedFile().getAbsolutePath(),
+                    "Elenco esportato in:\n" + destinazione.getAbsolutePath(),
                     "Fatto", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Errore nella scrittura:\n" + e.getMessage(),

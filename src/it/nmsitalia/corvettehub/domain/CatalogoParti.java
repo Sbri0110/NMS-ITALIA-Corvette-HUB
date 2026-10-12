@@ -157,6 +157,9 @@ public final class CatalogoParti {
             return "Altro";
         }
         String s = id.startsWith("^") ? id.substring(1) : id;
+        // i contenitori di deposito non hanno il prefisso B_: sono moduli veri
+        // che si montano sulla Corvette e hanno un inventario tutto loro
+        if (s.startsWith("CONTAINER") || s.startsWith("MAGICCONTAINER")) return "Magazzini";
         if (!s.startsWith("B_")) {
             return "Altro";
         }

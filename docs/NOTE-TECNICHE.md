@@ -310,5 +310,7 @@ esclude sorgenti, test, configurazione locale, log, Builds e Backup. Lo
 script genera anche il file SHA-256. Il pacchetto si trova in `dist/`.
 
 Vedi [Revisione 1.2.0](REVISIONE-1.2.0.md) per la sicurezza dei salvataggi,
-[Revisione 1.2.1](REVISIONE-1.2.1.md) per il layout e
-[Revisione 1.2.2](REVISIONE-1.2.2.md) per la correzione dei comandi.
+[Revisione 1.2.1](REVISIONE-1.2.1.md) per il layout,
+[Revisione 1.2.2](REVISIONE-1.2.2.md) per la correzione dei comandi e
+[Revisione 1.2.3](REVISIONE-1.2.3.md) per il restyling e la scheda
+"Deposito Corvette".

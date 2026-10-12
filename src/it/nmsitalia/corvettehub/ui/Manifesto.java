@@ -4,47 +4,158 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-/** Pannello introduttivo, disegno vettoriale e percorso di lavoro. */
+/**
+ * Il pannello introduttivo della schermata salvataggi.
+ *
+ * Due cose insieme: racconta cosa fa il programma e indica in che punto del
+ * percorso si trova l'utente. Il disegno vettoriale al centro (una rotta con
+ * un pianeta) e' lo stesso linguaggio delle icone della navigazione.
+ *
+ * Rispetto alla versione precedente: carta con ombra, testi su una scala piu'
+ * chiara, i tre passi numerati con il segno della tappa, e un riquadro di
+ * sicurezza in fondo.
+ */
 public final class Manifesto extends JPanel {
+
     public Manifesto() {
-        setOpaque(false); setPreferredSize(Scala.dim(260,360));
-        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS)); setBorder(Scala.bordo(18));
-        add(testo("IL TUO CENTRO DI COMANDO", 10, Theme.ACCENTO, true));
-        add(Box.createVerticalStrut(Scala.px(16)));
-        add(testo("Pronto a partire.", 19, Theme.TESTO, true));
-        add(Box.createVerticalStrut(Scala.px(12)));
-        add(testo("<html>Progetti, inventari e tecnologie.<br>Ogni Corvette, al suo posto.</html>",13,Theme.TESTO_TENUE,false));
-        add(Box.createVerticalGlue());
-        add(testo("01   Scegli il salvataggio",13,Theme.TESTO,true));
+        setOpaque(false);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBorder(Scala.bordo(22, 20, 22, 20));
+
+        add(riga(Theme.maiuscoletto("Il tuo centro di comando")));
         add(Box.createVerticalStrut(Scala.px(14)));
-        add(testo("02   Esplora il tuo hangar",13,Theme.TESTO_TENUE,false));
-        add(Box.createVerticalStrut(Scala.px(14)));
-        add(testo("03   Scambia i tuoi progetti",13,Theme.TESTO_TENUE,false));
-        add(Box.createVerticalStrut(Scala.px(18)));
-        add(testo("●  Backup prima di ogni modifica",10,Theme.OK,false));
+        add(riga(titolo("Pronto a partire.")));
         add(Box.createVerticalStrut(Scala.px(8)));
-        add(testo("<html>Le scritture sono verificate.<br>La tua partita resta al centro.</html>",11,Theme.TESTO_TENUE,false));
+        add(riga(corpo("Progetti, inventari e tecnologie.", Theme.TESTO_TENUE)));
+        add(Box.createVerticalStrut(Scala.px(2)));
+        add(riga(corpo("Ogni Corvette, al suo posto.", Theme.TESTO_TENUE)));
+
+        add(Box.createVerticalStrut(Scala.px(22)));
+
+        add(passo("1", "Scegli il salvataggio", true));
+        add(Box.createVerticalStrut(Scala.px(12)));
+        add(passo("2", "Esplora il tuo hangar", false));
+        add(Box.createVerticalStrut(Scala.px(12)));
+        add(passo("3", "Scambia i tuoi progetti", false));
+
+        add(Box.createVerticalStrut(Scala.px(22)));
+        add(sicurezza());
+
+        // La carta resta compatta: con un'altezza libera il BoxLayout la
+        // stirava a tutta finestra e sembrava vuota.
+        add(Box.createVerticalGlue());
     }
-    private JLabel testo(String t,int n,Color c,boolean bold) {
-        JLabel l=new JLabel(t); l.setFont(Scala.font(bold?Font.BOLD:Font.PLAIN,n));
-        l.setForeground(c); l.setAlignmentX(LEFT_ALIGNMENT); return l;
+
+    @Override public Dimension getMaximumSize() {
+        return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
     }
+
+    // ------------------------------------------------------------ elementi
+
+    private JPanel riga(JComponent c) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setOpaque(false);
+        p.setAlignmentX(LEFT_ALIGNMENT);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, c.getPreferredSize().height));
+        p.add(c, BorderLayout.WEST);
+        return p;
+    }
+
+    private JLabel titolo(String t) {
+        JLabel l = new JLabel(t);
+        l.setFont(Scala.font(Font.PLAIN, 20));
+        l.setForeground(Theme.TESTO);
+        return l;
+    }
+
+    private JLabel corpo(String t, Color c) {
+        JLabel l = new JLabel(t);
+        l.setFont(Theme.corpo());
+        l.setForeground(c);
+        return l;
+    }
+
+    /** Un passo del percorso: il numero in un cerchio, accanto al testo. */
+    private JPanel passo(String numero, String testo, boolean attivo) {
+        JPanel p = new JPanel(new BorderLayout(Scala.px(11), 0));
+        p.setOpaque(false);
+        p.setAlignmentX(LEFT_ALIGNMENT);
+
+        Theme.SegnoNumero segno = new Theme.SegnoNumero(numero);
+        if (attivo) segno.attivo(); else segno.spento();
+        segno.setPreferredSize(Scala.dim(26, 26));
+        segno.setMinimumSize(Scala.dim(26, 26));
+        segno.setMaximumSize(Scala.dim(26, 26));
+
+        JLabel t = new JLabel(testo);
+        t.setFont(Scala.font(attivo ? Font.BOLD : Font.PLAIN, 12));
+        t.setForeground(attivo ? Theme.TESTO : Theme.TESTO_TENUE);
+
+        p.add(segno, BorderLayout.WEST);
+        p.add(t, BorderLayout.CENTER);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, Scala.px(26)));
+        return p;
+    }
+
+    /** Il riquadro in fondo: le due promesse di sicurezza. */
+    private JPanel sicurezza() {
+        Theme.Carta c = new Theme.Carta().riempi(Theme.SUPERFICIE).senzaOmbra().raggio(Scala.px(10));
+        c.setLayout(new BoxLayout(c, BoxLayout.Y_AXIS));
+        c.setBorder(Scala.bordo(12, 12, 12, 12));
+        c.setAlignmentX(LEFT_ALIGNMENT);
+
+        JLabel a = new JLabel("Scritture verificate");
+        a.setFont(Scala.font(Font.BOLD, 11));
+        a.setForeground(Theme.OK);
+        a.setAlignmentX(LEFT_ALIGNMENT);
+
+        JLabel b = new JLabel("<html>Backup prima di ogni modifica.<br>"
+                + "La tua partita resta al centro.</html>");
+        b.setFont(Scala.font(Font.PLAIN, 11));
+        b.setForeground(Theme.TESTO_TENUE);
+        b.setAlignmentX(LEFT_ALIGNMENT);
+
+        c.add(a);
+        c.add(Box.createVerticalStrut(Scala.px(5)));
+        c.add(b);
+        JPanel riga = new JPanel(new BorderLayout());
+        riga.setOpaque(false);
+        riga.setAlignmentX(LEFT_ALIGNMENT);
+        riga.add(c);
+        return riga;
+    }
+
     @Override protected void paintComponent(Graphics g) {
-        Graphics2D p=(Graphics2D)g.create();
-        p.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        p.setPaint(new GradientPaint(0,0,Theme.SUPERFICIE_ALTA,getWidth(),getHeight(),Theme.SUPERFICIE));
-        p.fillRoundRect(0,0,getWidth()-1,getHeight()-1,Scala.px(20),Scala.px(20));
-        p.setColor(Theme.BORDO); p.drawRoundRect(0,0,getWidth()-1,getHeight()-1,Scala.px(20),Scala.px(20));
-        int mid=getHeight()/2-Scala.px(20),cx=getWidth()/2;
-        if (getHeight()>Scala.px(450)) {
-            p.setColor(new Color(0x304053));
-            p.drawOval(cx-Scala.px(83),mid-Scala.px(54),Scala.px(166),Scala.px(108));
-            p.drawOval(cx-Scala.px(105),mid-Scala.px(72),Scala.px(210),Scala.px(144));
-            p.setColor(Theme.ACCENTO); p.setStroke(new BasicStroke(Scala.px(2)));
-            Path2D s=new Path2D.Double(); s.moveTo(cx,mid-Scala.px(38));
-            s.lineTo(cx+Scala.px(28),mid+Scala.px(25)); s.lineTo(cx,mid+Scala.px(10));
-            s.lineTo(cx-Scala.px(28),mid+Scala.px(25)); s.closePath(); p.draw(s);
-            p.fillOval(cx+Scala.px(72),mid-Scala.px(30),Scala.px(5),Scala.px(5));
+        Graphics2D p = (Graphics2D) g.create();
+        p.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int w = getWidth() - 1, h = getHeight() - 1;
+        int r = Scala.px(16);
+
+        Theme.ombra(p, Scala.px(3), Scala.px(3), w - Scala.px(6), h - Scala.px(6), r, 0.5f);
+        p.setPaint(new GradientPaint(0, 0, Theme.SUPERFICIE_ALTA, 0, h, Theme.SUPERFICIE));
+        p.fillRoundRect(Scala.px(3), Scala.px(3), w - Scala.px(6), h - Scala.px(6), r, r);
+        p.setColor(Theme.BORDO);
+        p.drawRoundRect(Scala.px(3), Scala.px(3), w - Scala.px(6) - 1, h - Scala.px(6) - 1, r, r);
+
+        // il disegno vettoriale: un pianeta con la rotta
+        int cx = getWidth() / 2, cy = getHeight() / 2 - Scala.px(6);
+        if (getHeight() > Scala.px(430)) {
+            p.setColor(new Color(0x24344C));
+            p.drawOval(cx - Scala.px(46), cy - Scala.px(28), Scala.px(92), Scala.px(56));
+            p.setColor(new Color(0x2F4258));
+            p.drawOval(cx - Scala.px(34), cy - Scala.px(21), Scala.px(68), Scala.px(42));
+            p.setColor(Theme.ACCENTO);
+            p.setStroke(new BasicStroke(Scala.px(1.6f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            Path2D rotta = new Path2D.Double();
+            rotta.moveTo(cx - Scala.px(30), cy + Scala.px(18));
+            rotta.curveTo(cx - Scala.px(10), cy - Scala.px(30),
+                    cx + Scala.px(10), cy + Scala.px(30),
+                    cx + Scala.px(32), cy - Scala.px(16));
+            p.draw(rotta);
+            p.fillOval(cx + Scala.px(28), cy - Scala.px(20), Scala.px(6), Scala.px(6));
+            p.setColor(Theme.TESTO_TENUE);
+            p.fillOval(cx - Scala.px(33), cy + Scala.px(15), Scala.px(5), Scala.px(5));
         }
         p.dispose();
     }

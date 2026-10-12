@@ -16,7 +16,6 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -260,16 +259,13 @@ public final class SchedaImporta extends JPanel {
     }
 
     private void scegliFile() {
-        JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Scegli il progetto Corvette");
-        fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                "Progetto Corvette (*.json)", "json"));
         File libreria = new File(ScrittoreSalvataggio.cartellaProgramma(), "Builds");
-        if (libreria.isDirectory()) {
-            fc.setCurrentDirectory(libreria);
-        }
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            caricaFile(fc.getSelectedFile());
+        File partenza = (fileProgetto != null && fileProgetto.getParentFile() != null)
+                ? fileProgetto.getParentFile()
+                : (libreria.isDirectory() ? libreria : new File("."));
+        File scelto = SelettoreFile.apri(this, "Scegli il progetto Corvette", partenza, "json");
+        if (scelto != null) {
+            caricaFile(scelto);
         }
     }
 
@@ -458,14 +454,16 @@ public final class SchedaImporta extends JPanel {
         final eV oggetti = build.getOggetti();
 
         importa.setEnabled(false);
-        esito.setText("Scrivo...\n\nQuesta operazione richiede qualche secondo: "
-                + "converte il salvataggio, fa il backup, riscrive e rilegge.");
+        esito.setText("Importazione della build \"" + nomeBuild + "\"...\n\n"
+                + "Questa operazione richiede qualche secondo: converte il "
+                + "salvataggio, fa il backup, riscrive e rilegge.");
         esito.setCaretPosition(0);
 
         final SaveLocator.Rilevamento rl = rilevamento;
         final SaveSlotInfo sl = slot;
 
         Theme.lavora(this, true);
+        Theme.fase(this, "Preparo la copia di sicurezza\u2026");
         new SwingWorker<ScrittoreSalvataggio.Esito, Void>() {
             @Override
             protected ScrittoreSalvataggio.Esito doInBackground() {
@@ -478,6 +476,7 @@ public final class SchedaImporta extends JPanel {
 
                             @Override
                             public void applica(eY radice) {
+                                Theme.fase(SchedaImporta.this, "Inserisco i moduli nella Corvette\u2026");
                                 it.nmsitalia.corvettehub.domain.ModificheCorvette.importa(
                                         radice, indiceBase, destinazione.getIndiceNave(), oggetti, cambiaNome, nomeBuild);
                             }

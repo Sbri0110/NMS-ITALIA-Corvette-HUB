@@ -67,18 +67,18 @@ public final class RegressioniPulsanti {
                     }
                 }
             }
-            SchedaRinomina rinomina=(SchedaRinomina)tabs.getComponentAt(3);
+            SchedaRinomina rinomina=(SchedaRinomina)tabs.getComponentAt(indiceScheda(tabs,"Rinomina"));
             tabs.setSelectedComponent(rinomina);prepara(1280);
             ((JTextField)campo(rinomina,"nomeNuovo")).setText("Nome di prova");
             dialogo((JButton)campo(rinomina,"rinomina"),"Rinomina");
-            SchedaImporta importa=(SchedaImporta)tabs.getComponentAt(1);
+            SchedaImporta importa=(SchedaImporta)tabs.getComponentAt(indiceScheda(tabs,"Importa"));
             tabs.setSelectedComponent(importa);importa.caricaFile(new File(builds,"Aurora.json"));prepara(1280);
             dialogo((JButton)campo(importa,"scegliFile"),"Scegli file");
             dialogo((JButton)campo(importa,"importa"),"Importa");
-            SchedaElimina elimina=(SchedaElimina)tabs.getComponentAt(4);
+            SchedaElimina elimina=(SchedaElimina)tabs.getComponentAt(indiceScheda(tabs,"Elimina"));
             tabs.setSelectedComponent(elimina);prepara(1280);
             dialogo((JButton)campo(elimina,"elimina"),"Elimina");
-            SchedaEsporta esporta=(SchedaEsporta)tabs.getComponentAt(2);
+            SchedaEsporta esporta=(SchedaEsporta)tabs.getComponentAt(indiceScheda(tabs,"Esporta"));
             tabs.setSelectedComponent(esporta);prepara(1280);
             int generazione=(Integer)campo(hub,"generazione");
             ((JTextField)campo(esporta,"nomeBuild")).setText("Export-pulsante");
@@ -87,7 +87,9 @@ public final class RegressioniPulsanti {
             try { ok(WrapperBuild.leggi(new File(builds,"Export-pulsante.json")).getNumeroModuli()>0,"clic Esporta crea progetto leggibile"); }
             catch(Exception e){throw new RuntimeException(e);}
             ok(!hub.isOccupata() && generazione==(Integer)campo(hub,"generazione"),"Esporta conserva slot e non avvia ricaricamenti");
-            SchedaLibreria libreria=(SchedaLibreria)tabs.getComponentAt(6);
+            // L'indice della Libreria va cercato per nome, non per posizione:
+            // l'ordine delle schede cambia quando se ne aggiunge una nuova.
+            SchedaLibreria libreria=(SchedaLibreria)tabs.getComponentAt(indiceScheda(tabs,"Libreria"));
             ok(((DefaultListModel<?>)campo(libreria,"modello")).size()==2,"Esporta aggiorna la libreria");
             tabs.setSelectedComponent(libreria);((JList<?>)campo(libreria,"lista")).setSelectedIndex(0);
             mouse((JButton)campo(libreria,"importaProgetto"));
@@ -98,6 +100,17 @@ public final class RegressioniPulsanti {
             ok(((JButton)campo(rinomina,"rinomina")).isEnabled(),"fine scrittura riabilita Rinomina");
         });
         System.out.println("PROVE PULSANTI SUPERATE: "+prove+" scala "+Scala.fattore());System.exit(0);
+    }
+    /**
+     * Trova una scheda dal titolo.
+     *
+     * Cercarla per nome invece che per numero evita che aggiungere una scheda
+     * faccia fallire la prova con un ClassCastException che non c'entra nulla
+     * con i pulsanti.
+     */
+    private static int indiceScheda(JTabbedPane tabs,String titolo) {
+        for(int i=0;i<tabs.getTabCount();i++) if(titolo.equals(tabs.getTitleAt(i))) return i;
+        throw new IllegalStateException("scheda \""+titolo+"\" non trovata");
     }
     private static void dialogo(JButton b,String nome) {
         ok(b.isEnabled(),nome+" abilitato");boolean aperto=false;

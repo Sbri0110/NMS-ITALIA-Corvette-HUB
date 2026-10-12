@@ -10,7 +10,7 @@ Applicazione desktop per Windows, dedicata esclusivamente alle Corvette di
 No Man's Sky.
 
 [![Licenza](https://img.shields.io/badge/licenza-Apache%202.0-blue.svg)](LICENSE)
-[![Versione](https://img.shields.io/badge/versione-1.2.2-orange.svg)](../../releases)
+[![Versione](https://img.shields.io/badge/versione-1.2.3-orange.svg)](../../releases)
 [![Piattaforma](https://img.shields.io/badge/piattaforma-Windows-0078D6.svg)](#requisiti)
 [![Discord](https://img.shields.io/badge/Discord-NMS%20ITALIA-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/uvDTR3wRMg)
 
@@ -41,7 +41,9 @@ Le funzioni principali:
 | **Esporta** | estrae una Corvette in un file condivisibile |
 | **Rinomina** | cambia il nome di una Corvette |
 | **Elimina** | toglie una Corvette dal salvataggio, restituendo i moduli al deposito della Stazione |
-| **Consultare** | i moduli della Stazione Spaziale, le tecnologie installate, i depositi delle basi |
+| **Deposito** | i moduli della Stazione Spaziale e i depositi delle basi |
+| **Deposito Corvette** | i contenitori montati sulla Corvette scelta, con la griglia per riordinarli |
+| **Libreria** | i progetti esportati, pronti da reimportare |
 
 Il tool non sblocca, non crea e non riempie nulla: nessun modulo compare dal
 nulla. L'unica aggiunta al deposito è il **recupero dei moduli che erano già
@@ -57,6 +59,8 @@ gioco: se non c'è posto, il tool si ferma e te lo dice invece di allargarla.
 
 <img src="docs/img/premium/02-corvette.png" alt="Scheda Corvette" width="100%">
 
+<img src="docs/img/premium/08-deposito corvette.png" alt="Deposito Corvette" width="100%">
+
 <img src="docs/img/premium/07-deposito.png" alt="Deposito dei moduli" width="100%">
 
 <img src="docs/img/premium/03-importa.png" alt="Importazione di un progetto" width="100%">
@@ -70,7 +74,7 @@ gioco: se non c'è posto, il tool si ferma e te lo dice invece di allargarla.
 
 <img src="docs/img/premium/06-elimina.png" alt="Eliminazione di una Corvette" width="100%">
 
-<img src="docs/img/premium/08-libreria.png" alt="Libreria dei progetti" width="100%">
+<img src="docs/img/premium/09-libreria.png" alt="Libreria dei progetti" width="100%">
 
 </details>
 

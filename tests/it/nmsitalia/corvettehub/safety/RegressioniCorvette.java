@@ -52,8 +52,12 @@ public final class RegressioniCorvette {
             s.b("PrimaryShip",primaria);
             Corvette c=LettoreCorvette.leggi(m).corvette.get(eliminata);
             byte[] prima=firma(m);int moduliPrima=moduli(s.H("CorvetteStorageInventory"));
-            int rimossi=c.getNumeroModuli();
             EliminazioneCorvette.Piano piano=EliminazioneCorvette.pianifica(m,c);
+            // Al deposito tornano SOLO i moduli ^B_. Sulla Corvette possono
+            // esserci anche pezzi che il deposito non accetta (i contenitori
+            // ^CONTAINER0..9 e le decorazioni): getNumeroModuli() li conta tutti,
+            // quindi il numero atteso va preso dal piano, non dal totale.
+            int rimossi=piano.moduliCorvette;
             ok(piano.possibile && Arrays.equals(prima,firma(m)),"piano senza mutazioni: nave "+eliminata+", selezionata "+primaria);
             String nomeSelezionata=navi.V(primaria==eliminata?piano.naveSostitutiva:primaria).getValueAsString("Name");
             EliminazioneCorvette.applica(m,c);
