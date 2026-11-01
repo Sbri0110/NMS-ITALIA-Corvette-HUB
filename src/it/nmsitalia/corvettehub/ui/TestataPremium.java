@@ -63,10 +63,10 @@ public final class TestataPremium extends JPanel {
     private void adatta() {
         if (discord == null) return;
         int w = getParent() == null ? getWidth() : getParent().getWidth();
-        boolean compatto = w > 0 && w < Scala.px(620);
+        boolean compatto = w > 0 && w < Scala.px(700);
         firma.setVisible(!compatto);
         versione.setVisible(!compatto);
-        String testo = compatto ? "Discord  \u2197" : "Discord NMS ITALIA  \u2197";
+        String testo = compatto ? "Discord  \u2197" : Comunita.NOME_SERVER + "  \u2197";
         if (!testo.equals(discord.getText())) discord.setText(testo);
     }
 

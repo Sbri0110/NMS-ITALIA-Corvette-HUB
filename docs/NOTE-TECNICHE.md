@@ -127,6 +127,35 @@ negozio, prima di installare la tecnologia.
 
 ---
 
+## Il selettore di file
+
+`ui/SelettoreFile.java` sostituisce `JFileChooser`: quello di Swing usa il
+Look-and-Feel di sistema e in un programma che ha un suo vestito sembra
+un'altra applicazione.
+
+La finestra ha la struttura di Esplora file: barra con indietro, avanti, su e
+aggiorna; percorso a pezzi cliccabili; barra laterale con i preferiti e le
+unità; elenco con nome e dimensione.
+
+Tre scelte che vale la pena conoscere prima di metterci mano:
+
+- **Il percorso a pezzi non è fatto di componenti.** `Briciole` disegna i pezzi
+  a mano e tiene solo i rettangoli per capire dove si è cliccato. Con dei
+  `JLabel` veri, ogni volta che la finestra si stringe bisogna governare un
+  giro di validazione che rimbalza; così il problema non esiste.
+- **I margini degli elenchi stanno su un guscio.** `Theme.rifinisci()` azzera il
+  bordo di ogni `JScrollPane`: il margine interno va messo su un `JPanel`
+  attorno allo scorrimento.
+- **Le icone sono disegnate su una griglia di 16 punti** e usano `Line2D`,
+  `RoundRectangle2D` ed `Ellipse2D`, non `drawLine`/`fillRect`: quelli
+  accettano solo numeri interi e sul reticolo da 16 punti servono i mezzi punti.
+
+La cartella di partenza viene "risalita" fino al primo antenato che esiste
+(`normalizza`): se un salvataggio è stato spostato, la finestra non si apre
+vuota.
+
+---
+
 ## La scala dell'interfaccia (monitor 4K)
 
 Tutte le misure del programma sono in pixel: font a 12 punti, pulsanti alti 28,

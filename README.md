@@ -10,11 +10,11 @@ Applicazione desktop per Windows, dedicata esclusivamente alle Corvette di
 No Man's Sky.
 
 [![Licenza](https://img.shields.io/badge/licenza-Apache%202.0-blue.svg)](LICENSE)
-[![Versione](https://img.shields.io/badge/versione-1.2.3-orange.svg)](../../releases)
+[![Versione](https://img.shields.io/badge/versione-1.2.4-orange.svg)](../../releases)
 [![Piattaforma](https://img.shields.io/badge/piattaforma-Windows-0078D6.svg)](#requisiti)
-[![Discord](https://img.shields.io/badge/Discord-NMS%20ITALIA-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/uvDTR3wRMg)
+[![Discord](https://img.shields.io/badge/Discord-AGIT%20Alleanza%20Galattica%20Italiana-5865F2.svg?logo=discord&logoColor=white)](https://discord.gg/uvDTR3wRMg)
 
-**[Entra nel Discord di NMS ITALIA](https://discord.gg/uvDTR3wRMg)** ·
+**[Entra nel Discord \[AGIT\] Alleanza Galattica Italiana](https://discord.gg/uvDTR3wRMg)** ·
 [Scarica](../../releases/latest) ·
 [Segnala un problema](../../issues)
 
@@ -31,7 +31,7 @@ No Man's Sky.
 
 ## Cos'è
 
-Un workspace dedicato alla tua flotta, con navigazione laterale, statistiche a schede, anteprime e libreria locale. Il pulsante **Discord NMS ITALIA**, sempre visibile nella testata, apre la community nel browser.
+Un workspace dedicato alla tua flotta, con navigazione laterale, statistiche a schede, anteprime e libreria locale. Il pulsante **[AGIT] Alleanza Galattica Italiana**, sempre visibile nella testata, apre la community nel browser.
 
 Le funzioni principali:
 
@@ -75,6 +75,8 @@ gioco: se non c'è posto, il tool si ferma e te lo dice invece di allargarla.
 <img src="docs/img/premium/06-elimina.png" alt="Eliminazione di una Corvette" width="100%">
 
 <img src="docs/img/premium/09-libreria.png" alt="Libreria dei progetti" width="100%">
+
+<img src="docs/img/premium/90-selettore-file.png" alt="Scelta di un progetto Corvette" width="100%">
 
 </details>
 
@@ -247,6 +249,6 @@ Questo progetto non è affiliato a Hello Games e non è approvato da Hello Games
 
 <br>
 
-**[Discord di NMS ITALIA](https://discord.gg/uvDTR3wRMg)**
+**[\[AGIT\] Alleanza Galattica Italiana](https://discord.gg/uvDTR3wRMg)**
 
 </div>
